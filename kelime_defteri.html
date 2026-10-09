@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kelime Defterim</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script>
+  async function _initFirebase(){
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const { getDatabase, ref, set, onValue } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+    const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+    const app = initializeApp({
+      apiKey: "AIzaSyAvDZ8mAL02Hnm30Wb0gtPxxq5aEOW_6D4",
+      authDomain: "kelime-defterim-51fd6.firebaseapp.com",
+      databaseURL:"https://kelime-defterim-51fd6-default-rtdb.europe-west1.firebasedatabase.app/",
+      projectId: "kelime-defterim-51fd6"
+    });
+    const db  = getDatabase(app);
+    const auth = getAuth(app);
+    window._FB = { db, ref, set, onValue, auth, signOut };
+    window._AUTH = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, auth };
+    onAuthStateChanged(auth, (user) => {
+      if(user){
+        window._currentUser = user;
+        document.getElementById('loginScreen').style.display='none';
+        document.getElementById('appRoot').style.display='block';
+        // Extract username from fake email (strip @kelimedefteri.app)
+        const uname = (user.email||'').replace('@kelimedefteri.app','');
+        document.getElementById('userEmail').textContent = uname || user.email;
+        document.dispatchEvent(new Event('fb-ready'));
+      } else {
+        window._currentUser = null;
+        document.getElementById('loginScreen').style.display='flex';
+        document.getElementById('appRoot').style.display='none';
+        document.getElementById('fbLoad').style.display='none';
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', _initFirebase);
+</script>
+<style>
+/* ═══════════════════════════════════════
+   THEME VARIABLES
+═══════════════════════════════════════ */
+:root{
+  --cream:#FAF7F2; --ink:#1A1A2E; --ps:#C4B5FD; --pm:#7C3AED; --pd:#4C1D95;
+  --gold:#F59E0B; --rose:#FDA4AF; --mint:#6EE7B7; --red:#F87171;
+  --bg:#FFFFFF; --border:#E8E2D9; --muted:#9188A0;
+  --surface:#F5F3FF; --surface2:#EDE9FE; --surface-border:#DDD6FE;
+  --badge-adj-bg:#EDE9FE; --badge-adj-c:var(--pm);
+  --badge-noun-bg:#FEF3C7; --badge-noun-c:#D97706;
+  --badge-verb-bg:#D1FAE5; --badge-verb-c:#059669;
+  --row-hover:#FDFCFB; --thead-bg:#FAFAFA; --td-border:#F5F2EF;
+  --cal-off-bg:#F5F2EF; --cal-off-c:#ccc;
+  --rep-divider:#f0ebe4;
+  --modal-bg:#fff; --modal-shadow:rgba(0,0,0,.2);
+  --warn-bg:#FEF3C7; --warn-border:#FDE68A; --warn-c:#92400E;
+  --note-bg:#FFFBEB; --note-border:#FDE68A; --note-c:#92400E;
+  --hdr-a:var(--pd); --hdr-b:var(--pm); --hdr-c:#A855F7;
+  --input-focus-bg:#fff;
+  --scrollbar:#DDD6FE;
+}
+
+/* NIGHT */
+[data-theme="night"]{
+  --cream:#0D0D1A; --ink:#E2DEFF; --ps:#A78BFA; --pm:#9D6EFF; --pd:#7C3AED;
+  --gold:#FCD34D; --rose:#F9A8D4; --mint:#6EE7B7; --red:#F87171;
+  --bg:#161625; --border:#2A2845; --muted:#7C78A0;
+  --surface:#1E1C35; --surface2:#252340; --surface-border:#333060;
+  --badge-adj-bg:#2A2050; --badge-adj-c:#C4B5FD;
+  --badge-noun-bg:#2D2510; --badge-noun-c:#FCD34D;
+  --badge-verb-bg:#0F2820; --badge-verb-c:#6EE7B7;
+  --row-hover:#1A1830; --thead-bg:#131220; --td-border:#1F1D38;
+  --cal-off-bg:#1A1830; --cal-off-c:#3A3860;
+  --rep-divider:#252340;
+  --modal-bg:#1E1C35; --modal-shadow:rgba(0,0,0,.6);
+  --warn-bg:#2D2410; --warn-border:#4A3A10; --warn-c:#FCD34D;
+  --note-bg:#1F1A08; --note-border:#3A2E0A; --note-c:#FDE68A;
+  --hdr-a:#08081A; --hdr-b:#12102A; --hdr-c:#1E1B40;
+  --input-focus-bg:#1A1830;
+  --scrollbar:#333060;
+}
+
+/* OCEAN */
+[data-theme="ocean"]{
+  --cream:#EFF6FF; --ink:#0F172A; --ps:#93C5FD; --pm:#2563EB; --pd:#1D4ED8;
+  --gold:#F59E0B; --rose:#FDA4AF; --mint:#34D399; --red:#F87171;
+  --bg:#FFFFFF; --border:#BFDBFE; --muted:#64748B;
+  --surface:#EFF6FF; --surface2:#DBEAFE; --surface-border:#93C5FD;
+  --badge-adj-bg:#DBEAFE; --badge-adj-c:#1D4ED8;
+  --badge-noun-bg:#FEF3C7; --badge-noun-c:#D97706;
+  --badge-verb-bg:#D1FAE5; --badge-verb-c:#059669;
+  --row-hover:#F8FAFF; --thead-bg:#F0F7FF; --td-border:#E0EDFF;
+  --cal-off-bg:#EEF4FF; --cal-off-c:#93B4D0;
+  --rep-divider:#DBEAFE;
+  --modal-bg:#fff; --modal-shadow:rgba(0,0,0,.15);
+  --warn-bg:#FEF3C7; --warn-border:#FDE68A; --warn-c:#92400E;
+  --note-bg:#FFFBEB; --note-border:#FDE68A; --note-c:#92400E;
+  --hdr-a:#1E3A8A; --hdr-b:#2563EB; --hdr-c:#3B82F6;
+  --input-focus-bg:#fff;
+  --scrollbar:#93C5FD;
+}
+
+/* FOREST */
+[data-theme="forest"]{
+  --cream:#F0FDF4; --ink:#14532D; --ps:#86EFAC; --pm:#16A34A; --pd:#15803D;
+  --gold:#F59E0B; --rose:#FDA4AF; --mint:#34D399; --red:#F87171;
+  --bg:#FFFFFF; --border:#BBF7D0; --muted:#6B7280;
+  --surface:#F0FDF4; --surface2:#DCFCE7; --surface-border:#86EFAC;
+  --badge-adj-bg:#DCFCE7; --badge-adj-c:#15803D;
+  --badge-noun-bg:#FEF3C7; --badge-noun-c:#D97706;
+  --badge-verb-bg:#D1FAE5; --badge-verb-c:#059669;
+  --row-hover:#F7FDF9; --thead-bg:#F0FDF4; --td-border:#D1FAE5;
+  --cal-off-bg:#E8FDF0; --cal-off-c:#A3D4B0;
+  --rep-divider:#DCFCE7;
+  --modal-bg:#fff; --modal-shadow:rgba(0,0,0,.15);
+  --warn-bg:#FEF3C7; --warn-border:#FDE68A; --warn-c:#92400E;
+  --note-bg:#FFFBEB; --note-border:#FDE68A; --note-c:#92400E;
+  --hdr-a:#14532D; --hdr-b:#16A34A; --hdr-c:#22C55E;
+  --input-focus-bg:#fff;
+  --scrollbar:#86EFAC;
+}
+
+/* CANDY */
+[data-theme="candy"]{
+  --cream:#FFF1F9; --ink:#3B0764; --ps:#F9A8D4; --pm:#EC4899; --pd:#BE185D;
+  --gold:#F59E0B; --rose:#FDA4AF; --mint:#6EE7B7; --red:#F87171;
+  --bg:#FFFFFF; --border:#FBCFE8; --muted:#9D6D8A;
+  --surface:#FFF1F9; --surface2:#FCE7F3; --surface-border:#F9A8D4;
+  --badge-adj-bg:#FCE7F3; --badge-adj-c:#BE185D;
+  --badge-noun-bg:#FEF3C7; --badge-noun-c:#D97706;
+  --badge-verb-bg:#D1FAE5; --badge-verb-c:#059669;
+  --row-hover:#FFFAFD; --thead-bg:#FFF5FA; --td-border:#FCE7F3;
+  --cal-off-bg:#FDE8F5; --cal-off-c:#D4A8C0;
+  --rep-divider:#FCE7F3;
+  --modal-bg:#fff; --modal-shadow:rgba(0,0,0,.15);
+  --warn-bg:#FEF3C7; --warn-border:#FDE68A; --warn-c:#92400E;
+  --note-bg:#FFFBEB; --note-border:#FDE68A; --note-c:#92400E;
+  --hdr-a:#831843; --hdr-b:#DB2777; --hdr-c:#EC4899;
+  --input-focus-bg:#fff;
+  --scrollbar:#F9A8D4;
+}
+
+/* ═══════════════════════════════════════
+   LOGIN SCREEN
+═══════════════════════════════════════ */
+#loginScreen{display:none;position:fixed;inset:0;z-index:10000;background:linear-gradient(135deg,#1A1A2E 0%,#4C1D95 60%,#7C3AED 100%);align-items:center;justify-content:center;padding:20px;}
+.login-box{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:36px 32px;width:100%;max-width:380px;backdrop-filter:blur(12px);}
+.login-logo{font-family:'Playfair Display',serif;color:#fff;font-size:30px;font-weight:900;text-align:center;margin-bottom:6px;}
+.login-logo span{color:#C4B5FD;}
+.login-sub{color:rgba(255,255,255,.5);font-size:13px;text-align:center;margin-bottom:28px;}
+.login-tabs{display:flex;background:rgba(0,0,0,.2);border-radius:10px;padding:3px;margin-bottom:22px;gap:3px;}
+.login-tab{flex:1;padding:7px;border-radius:7px;border:none;background:transparent;color:rgba(255,255,255,.45);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.login-tab.on{background:rgba(255,255,255,.18);color:#fff;}
+.login-field{margin-bottom:14px;}
+.login-field label{display:block;font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:6px;}
+.login-field input{width:100%;padding:12px 14px;border:1.5px solid rgba(255,255,255,.15);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:16px;color:#fff;background:rgba(255,255,255,.08);outline:none;transition:border-color .18s;}
+.login-field input:focus{border-color:#C4B5FD;}
+.login-field input::placeholder{color:rgba(255,255,255,.3);}
+.login-btn{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#7C3AED,#A855F7);color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;transition:opacity .18s;}
+.login-btn:hover{opacity:.88;}
+.login-err{color:#F9A8D4;font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+.user-bar{display:flex;align-items:center;gap:8px;}
+.user-info{font-size:11px;color:rgba(255,255,255,.65);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.logout-btn{padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;}
+.logout-btn:hover{background:rgba(255,255,255,.15);color:#fff;}
+
+/* ═══════════════════════════════════════
+   THEME PICKER
+═══════════════════════════════════════ */
+.theme-picker{display:flex;align-items:center;gap:5px;}
+.theme-dot{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:transform .2s,border-color .2s;flex-shrink:0;}
+.theme-dot:hover{transform:scale(1.25);}
+.theme-dot.active{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.45);}
+.theme-dot[data-t="default"]{background:linear-gradient(135deg,#4C1D95,#A855F7);}
+.theme-dot[data-t="night"]{background:linear-gradient(135deg,#0D0D1A,#7C3AED);}
+.theme-dot[data-t="ocean"]{background:linear-gradient(135deg,#1E3A8A,#3B82F6);}
+.theme-dot[data-t="forest"]{background:linear-gradient(135deg,#14532D,#22C55E);}
+.theme-dot[data-t="candy"]{background:linear-gradient(135deg,#831843,#EC4899);}
+
+/* ═══════════════════════════════════════
+   BASE
+═══════════════════════════════════════ */
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;transition:background .25s,color .25s;}
+
+/* ═══════════════════════════════════════
+   HEADER
+═══════════════════════════════════════ */
+.hdr{background:linear-gradient(135deg,var(--hdr-a) 0%,var(--hdr-b) 60%,var(--hdr-c) 100%);padding:28px 40px 36px;position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;top:-60px;right:-60px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.06);}
+.hdr::after{content:'';position:absolute;bottom:-40px;left:30%;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.04);}
+.hdr-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+.logo{font-family:'Playfair Display',serif;color:#fff;font-size:26px;font-weight:900;}
+.logo span{color:var(--ps);}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.dbadge{background:rgba(255,255,255,.15);color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:500;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.2);}
+.ui-lang{display:flex;gap:2px;background:rgba(0,0,0,.15);border-radius:8px;padding:2px;}
+.ui-lang-btn{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:transparent;color:rgba(255,255,255,.5);transition:all .2s;font-family:'DM Sans',sans-serif;}
+.ui-lang-btn.on{background:rgba(255,255,255,.2);color:#fff;}
+.tgt-btn{display:flex;align-items:center;gap:5px;padding:5px 12px 5px 8px;border-radius:20px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:rgba(255,255,255,.55);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.tgt-btn:hover{background:rgba(255,255,255,.14);color:rgba(255,255,255,.9);border-color:rgba(255,255,255,.28);}
+.tgt-btn.on{background:rgba(255,255,255,.2);color:#fff;border-color:rgba(255,255,255,.45);box-shadow:0 1px 8px rgba(0,0,0,.18);}
+.tgt-flag{font-size:15px;line-height:1;}
+.target-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.1);}
+.stats{display:flex;gap:20px;flex-wrap:wrap;}
+.stat{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:14px 20px;color:#fff;backdrop-filter:blur(8px);min-width:95px;}
+.stat .n{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;display:block;line-height:1;}
+.stat .l{font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:.8px;margin-top:4px;display:block;}
+
+/* ═══════════════════════════════════════
+   MAIN LAYOUT
+═══════════════════════════════════════ */
+.main{padding:32px 40px;max-width:1140px;margin:0 auto;}
+.stitle{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px;align-items:start;}
+.card{background:var(--bg);border-radius:20px;padding:24px;border:1px solid var(--border);}
+.card h3{font-family:'Playfair Display',serif;font-size:16px;margin-bottom:4px;color:var(--ink);}
+.csub{font-size:12px;color:var(--muted);margin-bottom:16px;}
+
+/* ═══════════════════════════════════════
+   TODAY CARD
+═══════════════════════════════════════ */
+.today{background:var(--bg);border-radius:24px;padding:32px 36px;border:1px solid var(--border);box-shadow:0 4px 24px rgba(124,58,237,.08);position:relative;overflow:hidden;margin-bottom:32px;min-height:200px;}
+.today::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--pm),var(--ps));}
+.today-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;text-align:center;color:var(--muted);}
+.today-empty-icon{font-size:40px;margin-bottom:12px;opacity:.5;}
+.today-empty-txt{font-size:14px;line-height:1.5;}
+.wbadge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+.ba{background:var(--badge-adj-bg);color:var(--badge-adj-c);}
+.bn{background:var(--badge-noun-bg);color:var(--badge-noun-c);}
+.bv{background:var(--badge-verb-bg);color:var(--badge-verb-c);}
+.tw{font-family:'Playfair Display',serif;font-size:50px;font-weight:900;line-height:1;color:var(--ink);}
+.tp{color:var(--pm);font-size:15px;font-weight:300;margin-top:2px;margin-bottom:9px;}
+.tm{font-size:17px;color:var(--muted);margin-bottom:20px;}.tm strong{color:var(--ink);}
+.hdiv{height:1px;background:var(--border);margin:18px 0;}
+.flbl{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:9px;}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;min-height:0;}
+.chip{background:var(--surface);border:1px solid var(--surface-border);border-radius:12px;padding:7px 14px;}
+.chip-w{font-weight:600;color:var(--pm);font-size:14px;display:block;}.chip-t{font-size:11px;color:var(--muted);}
+.exbox{background:linear-gradient(135deg,var(--surface),var(--surface2));border-radius:14px;padding:18px 22px;border-left:4px solid var(--pm);}
+.ex-en{font-style:italic;font-size:15px;line-height:1.6;margin-bottom:5px;color:var(--ink);}
+.ex-tr{font-size:13px;color:var(--muted);}
+
+/* ═══════════════════════════════════════
+   REPEAT
+═══════════════════════════════════════ */
+.rep-section-title{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.rep-list-scroll{max-height:300px;overflow-y:auto;overflow-x:hidden;padding-right:2px;}
+.rep-list-scroll::-webkit-scrollbar{width:4px;}.rep-list-scroll::-webkit-scrollbar-track{background:transparent;}.rep-list-scroll::-webkit-scrollbar-thumb{background:var(--scrollbar);border-radius:4px;}
+.rep-item{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px dashed var(--rep-divider);}
+.rep-item:last-child{border-bottom:none;}
+.rdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dg{background:var(--gold);}.dm{background:var(--mint);}.dp{background:var(--ps);}.dr{background:var(--rose);}
+.rword{font-weight:600;font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;color:var(--ink);}
+.rdate{font-size:11px;color:var(--muted);white-space:nowrap;flex:1;}
+.rtog{width:28px;height:28px;border-radius:8px;border:2px solid var(--border);background:transparent;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .18s;flex-shrink:0;color:var(--muted);}
+.rtog:hover{border-color:var(--pm);background:var(--surface);}
+.rtog.on{background:var(--mint);border-color:#34D399;color:#065f46;}
+.rep-empty{font-size:13px;color:var(--muted);text-align:center;padding:20px 0;font-style:italic;}
+
+/* ═══════════════════════════════════════
+   QUIZ
+═══════════════════════════════════════ */
+.quiz-box{background:linear-gradient(135deg,var(--surface),var(--surface2));border-radius:14px;padding:18px 20px;text-align:center;margin-bottom:12px;min-height:90px;display:flex;align-items:center;justify-content:center;}
+.qw{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--ink);}
+.qp{font-size:14px;color:var(--pm);margin-top:4px;}
+.q-empty{font-size:13px;color:var(--muted);font-style:italic;}
+.q-ans{background:var(--surface);border-radius:12px;padding:12px 16px;font-size:14px;color:var(--ink);display:none;margin-bottom:12px;text-align:center;font-weight:500;border:1px solid var(--surface-border);}
+.q-btns{display:flex;gap:8px;margin-bottom:8px;}
+.qbtn{flex:1;padding:9px;border-radius:10px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;transition:all .15s;}
+.qshow{background:var(--surface2);color:var(--pm);}.qshow:hover{filter:brightness(.92);}
+.qprev{background:var(--warn-bg);color:var(--warn-c);}.qprev:hover{filter:brightness(.94);}
+.qnext{background:var(--pm);color:#fff;}.qnext:hover{opacity:.88;}
+.qcount{font-size:11px;color:var(--muted);text-align:center;min-height:16px;}
+.qmode-toggle{display:flex;gap:6px;margin-bottom:12px;}
+.qm-btn{flex:1;padding:6px;border-radius:8px;border:1.5px solid var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;color:var(--muted);transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.qm-btn.on{background:var(--surface2);border-color:var(--pm);color:var(--pm);}
+
+/* ═══════════════════════════════════════
+   PROGRESS
+═══════════════════════════════════════ */
+.prog-wrap{margin-bottom:13px;}
+.prog-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px;}
+.prog-bar{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;transition:width .5s;}
+.fa{background:linear-gradient(90deg,var(--gold),#FCD34D);}
+.fb{background:linear-gradient(90deg,var(--mint),#34D399);}
+.fc{background:linear-gradient(90deg,var(--pm),var(--ps));}
+
+/* ═══════════════════════════════════════
+   CALENDAR
+═══════════════════════════════════════ */
+.cal-wrap{margin-top:8px;}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.cal-nav{width:26px;height:26px;border-radius:7px;border:1.5px solid var(--border);background:transparent;cursor:pointer;font-size:13px;line-height:1;color:var(--muted);transition:all .15s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cal-nav:hover{border-color:var(--pm);color:var(--pm);}
+.cal-month-lbl{font-size:12px;font-weight:700;color:var(--ink);text-align:center;flex:1;}
+.cal-wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:3px;}
+.cal-wd{text-align:center;font-size:8px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--muted);padding:2px 0;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-cell{border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;padding:0;aspect-ratio:1;min-width:0;min-height:0;}
+.cal-cell.emp{background:transparent;}
+.cal-cell.off{background:var(--cal-off-bg);color:var(--cal-off-c);}
+.cal-cell.hit{background:var(--pm);color:#fff;}
+.cal-cell.now{background:var(--gold);color:#fff;box-shadow:0 1px 6px rgba(245,158,11,.45);}
+.cal-cell.now.hit{background:var(--pm);box-shadow:0 1px 6px rgba(124,58,237,.4);}
+.streak-num{font-family:'Playfair Display',serif;font-size:30px;font-weight:900;color:var(--pm);text-align:center;display:block;margin-top:10px;}
+.streak-lbl{font-size:11px;color:var(--muted);text-align:center;margin-top:2px;}
+
+/* ═══════════════════════════════════════
+   TABLE
+═══════════════════════════════════════ */
+.tcard{background:var(--bg);border-radius:20px;border:1px solid var(--border);overflow:hidden;margin-bottom:32px;}
+.ttop{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+.ttop h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--ink);}
+.ttop-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ftabs{display:flex;gap:3px;background:var(--cream);border-radius:10px;padding:3px;}
+.tab{padding:5px 11px;border-radius:7px;font-size:11px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all .18s;}
+.tab.on{background:var(--bg);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12);}
+.srch{position:relative;}
+.srch input{padding:6px 12px 6px 30px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);background:var(--cream);outline:none;transition:border-color .18s;width:160px;}
+.srch input:focus{border-color:var(--pm);background:var(--input-focus-bg);}
+.srch-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:12px;pointer-events:none;color:var(--muted);}
+.sort-sel{padding:6px 10px;border:1.5px solid var(--border);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:11px;color:var(--muted);background:var(--cream);outline:none;cursor:pointer;}
+.sort-sel:focus{border-color:var(--pm);}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--thead-bg);}
+th{padding:9px 14px;text-align:left;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);}
+td{padding:10px 14px;border-bottom:1px solid var(--td-border);font-size:13px;vertical-align:middle;color:var(--ink);}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--row-hover);}
+.tdw{font-weight:700;font-size:14px;cursor:pointer;color:var(--pm);transition:color .15s;}
+.tdw:hover{color:var(--pd);text-decoration:underline;}
+.tdp{color:var(--muted);font-size:11px;margin-top:1px;}
+.mbar-wrap{width:56px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.mbar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--pm),var(--ps));transition:width .4s;}
+.rep-ctrl{display:flex;align-items:center;gap:4px;}
+.rep-n{font-size:12px;color:var(--muted);min-width:22px;text-align:center;}
+.rb{width:22px;height:22px;border-radius:6px;border:none;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .15s;font-weight:700;}
+.rp{background:var(--surface2);color:var(--pm);}.rp:hover{filter:brightness(.9);}
+.rm{background:var(--badge-noun-bg);color:var(--red);}.rm:hover{filter:brightness(.93);}
+.del-btn{width:24px;height:24px;border-radius:6px;border:none;background:var(--badge-noun-bg);color:var(--red);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;opacity:.6;transition:all .15s;}
+.del-btn:hover{opacity:1;}
+.edit-btn{width:24px;height:24px;border-radius:6px;border:none;background:var(--surface2);color:var(--pm);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;opacity:.75;transition:all .15s;}
+.edit-btn:hover{opacity:1;}
+.drag-handle{cursor:grab;color:var(--muted);font-size:15px;padding:0 3px;opacity:.4;user-select:none;}
+.drag-handle:hover{opacity:1;}
+tr.dragging{opacity:.4;}
+tr.drag-over td{border-top:2px solid var(--pm);}
+.note-cell{max-width:120px;}
+.note-txt{font-size:11px;color:var(--muted);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;display:inline-block;vertical-align:middle;}
+.note-btn{background:none;border:none;cursor:pointer;font-size:12px;opacity:.45;transition:opacity .15s;padding:1px;}
+.note-btn:hover{opacity:1;}
+
+/* ═══════════════════════════════════════
+   FORM
+═══════════════════════════════════════ */
+.acard{background:var(--bg);border-radius:20px;padding:28px;border:1px solid var(--border);margin-bottom:32px;}
+.acard h3{font-family:'Playfair Display',serif;font-size:16px;margin-bottom:18px;color:var(--ink);}
+.fg4{display:grid;grid-template-columns:1fr 1fr 1fr 120px;gap:12px;margin-bottom:12px;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.field label{display:block;font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.field input,.field select,.field textarea{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--ink);background:var(--cream);outline:none;transition:border-color .18s;-webkit-appearance:none;appearance:none;}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted);font-size:13px;opacity:.6;}
+.field textarea{resize:vertical;min-height:64px;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--pm);background:var(--input-focus-bg);}
+.btn-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.add-btn{background:linear-gradient(135deg,var(--pm),var(--pd));color:#fff;border:none;padding:11px 26px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .18s,transform .1s;}
+.add-btn:hover{opacity:.9;transform:translateY(-1px);}
+.cancel-btn{background:transparent;color:var(--muted);border:1.5px solid var(--border);padding:11px 18px;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .18s;display:none;}
+.cancel-btn:hover{border-color:var(--pm);color:var(--pm);}
+.dup-warn{display:none;background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--warn-c);margin-bottom:10px;}
+.edit-bar{display:none;background:var(--surface);border:1px solid var(--surface-border);border-radius:10px;padding:8px 14px;font-size:13px;color:var(--pm);margin-bottom:14px;}
+
+/* ═══════════════════════════════════════
+   MODALS
+═══════════════════════════════════════ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(10,10,30,.6);backdrop-filter:blur(6px);z-index:100;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:var(--modal-bg);border-radius:20px;padding:32px;max-width:440px;width:90%;box-shadow:0 20px 60px var(--modal-shadow);animation:popIn .2s ease;border:1px solid var(--border);}
+@keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.modal h3{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:8px;color:var(--ink);}
+.modal p{color:var(--muted);font-size:14px;margin-bottom:20px;line-height:1.6;}
+.modal-btns{display:flex;gap:10px;justify-content:flex-end;}
+.mc{padding:10px 20px;border-radius:10px;border:1.5px solid var(--border);background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);}
+.mx{padding:10px 20px;border-radius:10px;border:none;background:var(--red);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;}
+.ms{padding:10px 20px;border-radius:10px;border:none;background:var(--pm);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;}
+.note-ta{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:11px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--cream);outline:none;resize:vertical;min-height:80px;transition:border-color .18s;}
+.note-ta:focus{border-color:var(--pm);background:var(--input-focus-bg);}
+
+/* ═══════════════════════════════════════
+   WORD DETAIL MODAL
+═══════════════════════════════════════ */
+.wdm{background:var(--modal-bg);border-radius:24px;padding:0;max-width:500px;width:90%;box-shadow:0 20px 60px var(--modal-shadow);animation:popIn .22s ease;overflow:hidden;max-height:90vh;overflow-y:auto;border:1px solid var(--border);}
+.wdm-hdr{background:linear-gradient(135deg,var(--hdr-a),var(--hdr-b));padding:26px 30px;position:relative;}
+.wdm-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;background:rgba(255,255,255,.2);color:#fff;}
+.wdm-word{font-family:'Playfair Display',serif;font-size:38px;font-weight:900;color:#fff;line-height:1;}
+.wdm-pron{color:rgba(255,255,255,.75);font-size:14px;margin-top:3px;}
+.wdm-body{padding:24px 30px;background:var(--modal-bg);}
+.wdm-meaning{font-size:17px;font-weight:600;color:var(--ink);margin-bottom:18px;}
+.wdm-sec{margin-bottom:14px;}
+.wdm-lbl{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.wdm-example{background:linear-gradient(135deg,var(--surface),var(--surface2));border-radius:11px;padding:12px 16px;border-left:3px solid var(--pm);}
+.wdm-ex-en{font-style:italic;font-size:13px;line-height:1.6;color:var(--ink);}
+.wdm-ex-tr{font-size:11px;color:var(--muted);margin-top:3px;}
+.wdm-fam{display:flex;gap:7px;flex-wrap:wrap;}
+.wdm-chip{background:var(--surface);border:1px solid var(--surface-border);border-radius:9px;padding:4px 11px;}
+.wdm-chip-w{font-weight:600;color:var(--pm);font-size:12px;}
+.wdm-chip-t{font-size:10px;color:var(--muted);}
+.wdm-stats{display:flex;gap:8px;margin-bottom:14px;}
+.wdm-stat{flex:1;background:var(--cream);border-radius:11px;padding:9px 12px;text-align:center;border:1px solid var(--border);}
+.wdm-stat-n{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--pm);}
+.wdm-stat-l{font-size:10px;color:var(--muted);margin-top:1px;}
+.wdm-note{background:var(--note-bg);border-radius:11px;padding:10px 14px;font-size:13px;color:var(--note-c);font-style:italic;border:1px solid var(--note-border);}
+.wdm-acts{display:flex;gap:8px;margin-top:18px;}
+.wdm-edit{flex:1;padding:9px;border-radius:10px;border:none;background:var(--surface2);color:var(--pm);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;transition:all .15s;}
+.wdm-edit:hover{filter:brightness(.92);}
+.wdm-close{flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--border);background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);transition:all .15s;}
+.wdm-close:hover{border-color:var(--muted);}
+
+/* ═══════════════════════════════════════
+   LOADING
+═══════════════════════════════════════ */
+.fb-loading{position:fixed;inset:0;background:var(--hdr-a);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s;}
+.fb-loading.hide{opacity:0;pointer-events:none;}
+.fb-logo{font-family:'Playfair Display',serif;color:#fff;font-size:36px;font-weight:900;}
+.fb-logo span{color:var(--ps);}
+.fb-spin{width:34px;height:34px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fb-txt{color:rgba(255,255,255,.55);font-size:13px;}
+
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--ink);color:var(--cream);padding:11px 18px;border-radius:12px;font-size:13px;font-weight:500;opacity:0;transform:translateY(8px);transition:all .25s;z-index:500;pointer-events:none;border:1px solid var(--border);}
+.toast.show{opacity:1;transform:translateY(0);}
+
+/* ═══════════════════════════════════════
+   MOBILE WORD CARDS
+═══════════════════════════════════════ */
+.wcard-list{display:none;padding:12px 14px;}
+.wcard{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:10px;}
+.wcard-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;}
+.wcard-word{font-weight:700;font-size:17px;color:var(--pm);cursor:pointer;line-height:1.2;}
+.wcard-pron{font-size:11px;color:var(--muted);margin-top:2px;}
+.wcard-meaning{font-size:13px;color:var(--ink);margin-bottom:10px;line-height:1.4;}
+.wcard-actions{display:flex;align-items:center;gap:8px;}
+.wcard-rep{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:10px;padding:5px 10px;border:1px solid var(--surface-border);}
+.wcard-rep-n{font-size:12px;font-weight:600;color:var(--muted);min-width:28px;text-align:center;}
+.wcard-mbar{flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.wcard-mfill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--pm),var(--ps));}
+.wcard-btns{display:flex;gap:6px;margin-left:auto;}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════ */
+@media(max-width:768px){
+  .main{padding:16px 14px;}.hdr{padding:18px 16px 24px;}
+  .two-col{grid-template-columns:1fr;gap:16px;}.fg4{grid-template-columns:1fr 1fr;}.fg2{grid-template-columns:1fr;}
+  .tw{font-size:32px;}.stats{gap:8px;}.ttop-right{width:100%;}
+  .srch input{width:120px;}
+  .hdr-top{flex-wrap:wrap;gap:8px;}
+  .hdr-right{flex-wrap:wrap;gap:6px;}
+  .target-tabs{gap:4px;padding-bottom:14px;margin-bottom:16px;}
+  .tgt-btn{font-size:11px;padding:4px 10px 4px 7px;}
+  .stat{padding:12px 14px;min-width:80px;}.stat .n{font-size:22px;}
+  /* Hide desktop table, show cards */
+  .tcard table,.tcard thead{display:none;}
+  .wcard-list{display:block;}
+  .tcard{border-radius:16px;overflow:visible;}
+  .ttop{flex-direction:column;align-items:flex-start;gap:10px;}
+  .ttop-right{flex-wrap:wrap;}
+  .ftabs{flex-wrap:wrap;}
+  .today{padding:20px 18px;}
+  .acard{padding:20px 16px;}
+  .fg4{grid-template-columns:1fr 1fr;}
+  .card{padding:18px 16px;}
+  .quiz-box{padding:14px 16px;}
+  .qw{font-size:24px;}
+  .field input,.field select,.field textarea{font-size:16px;-webkit-appearance:none;}
+}
+@media(max-width:480px){
+  .fg4{grid-template-columns:1fr;}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .two-col{gap:12px;}
+  .hdr{padding:16px 14px 20px;}
+}
+
+/* ═══════════════════════════════════════
+   TTS BUTTON
+═══════════════════════════════════════ */
+.tts-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 14px;border-radius:20px;border:1.5px solid var(--surface-border);background:var(--surface);color:var(--pm);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;transition:all .18s;margin-top:10px;}
+.tts-btn:hover{background:var(--surface2);border-color:var(--pm);}
+.tts-btn.speaking{background:var(--pm);color:#fff;border-color:var(--pm);animation:tts-pulse .8s ease-in-out infinite alternate;}
+.tts-btn svg{width:14px;height:14px;flex-shrink:0;}
+@keyframes tts-pulse{from{opacity:1}to{opacity:.65}}
+.wdm-tts{display:flex;gap:8px;margin-bottom:14px;}
+.wdm-tts .tts-btn{margin-top:0;flex:1;justify-content:center;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.today{animation:fadeUp .45s ease both;}
+.two-col>*{animation:fadeUp .45s .07s ease both;}
+.tcard{animation:fadeUp .45s .14s ease both;}
+.acard{animation:fadeUp .45s .2s ease both;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">Kelime<span>.</span>Defteri</div>
+    <div class="login-sub">Kişisel kelime defterin seni bekliyor</div>
+    <div class="login-tabs">
+      <button class="login-tab on" id="loginTabGiris" onclick="switchLoginTab('giris')">Giriş Yap</button>
+      <button class="login-tab" id="loginTabKayit" onclick="switchLoginTab('kayit')">Kayıt Ol</button>
+    </div>
+    <div class="login-field">
+      <label>Kullanıcı Adı</label>
+      <input type="text" id="loginUser" placeholder="kullaniciadi" autocomplete="username" autocorrect="off" autocapitalize="off" spellcheck="false" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+    </div>
+    <div class="login-field">
+      <label>Şifre</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" id="loginSubmitBtn" onclick="doLogin()">Giriş Yap</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- APP ROOT -->
+<div id="appRoot" style="display:none">
+
+<!-- LOADING -->
+<div class="fb-loading" id="fbLoad">
+  <div class="fb-logo">Kelime<span>.</span>Defteri</div>
+  <div class="fb-spin"></div>
+  <div class="fb-txt" id="fbTxt">Bağlanıyor...</div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="overlay" id="delModal">
+  <div class="modal">
+    <h3 id="delTitle">🗑️ Kelimeyi sil?</h3>
+    <p id="delTxt"></p>
+    <div class="modal-btns">
+      <button class="mc" onclick="closeModals()" id="delCancel">Vazgeç</button>
+      <button class="mx" onclick="confirmDelete()" id="delOk">Evet, sil</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE MODAL -->
+<div class="overlay" id="noteModal">
+  <div class="modal">
+    <h3 id="noteTitle">📝 Not Ekle</h3>
+    <p style="margin-bottom:12px" id="noteTxt"></p>
+    <textarea class="note-ta" id="noteInput"></textarea>
+    <div class="modal-btns" style="margin-top:14px">
+      <button class="mc" onclick="closeModals()" id="noteCancel">Vazgeç</button>
+      <button class="ms" onclick="saveNote()" id="noteOk">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- WORD DETAIL MODAL -->
+<div class="overlay" id="wdModal">
+  <div class="wdm" id="wdContent"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="logo">Kelime<span>.</span>Defteri</div>
+    <div class="hdr-right">
+      <div class="theme-picker">
+        <div class="theme-dot active" data-t="default" title="Mor" onclick="setTheme('default',this)"></div>
+        <div class="theme-dot" data-t="night" title="Gece" onclick="setTheme('night',this)"></div>
+        <div class="theme-dot" data-t="ocean" title="Okyanus" onclick="setTheme('ocean',this)"></div>
+        <div class="theme-dot" data-t="forest" title="Orman" onclick="setTheme('forest',this)"></div>
+        <div class="theme-dot" data-t="candy" title="Pembe" onclick="setTheme('candy',this)"></div>
+      </div>
+      <div class="dbadge" id="hDate"></div>
+      <div class="user-bar">
+        <span class="user-info" id="userEmail"></span>
+        <button class="logout-btn" onclick="doLogout()">Çıkış</button>
+      </div>
+    </div>
+  </div>
+  <!-- TARGET LANGUAGE TABS -->
+  <div class="target-tabs" id="targetTabs">
+    <button class="tgt-btn on" data-tgt="en" onclick="setTarget('en',this)"><span class="tgt-flag">🇬🇧</span>English</button>
+    <button class="tgt-btn" data-tgt="zh" onclick="setTarget('zh',this)"><span class="tgt-flag">🇨🇳</span>中文</button>
+    <button class="tgt-btn" data-tgt="ar" onclick="setTarget('ar',this)"><span class="tgt-flag">🇸🇦</span>العربية</button>
+    <button class="tgt-btn" data-tgt="es" onclick="setTarget('es',this)"><span class="tgt-flag">🇪🇸</span>Español</button>
+    <button class="tgt-btn" data-tgt="ja" onclick="setTarget('ja',this)"><span class="tgt-flag">🇯🇵</span>日本語</button>
+    <button class="tgt-btn" data-tgt="fr" onclick="setTarget('fr',this)"><span class="tgt-flag">🇫🇷</span>Français</button>
+    <button class="tgt-btn" data-tgt="de" onclick="setTarget('de',this)"><span class="tgt-flag">🇩🇪</span>Deutsch</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><span class="n" id="sTotal">0</span><span class="l" id="lTotal">Kelime</span></div>
+    <div class="stat"><span class="n" id="sStreak">0</span><span class="l" id="lStreak">Gün Serisi</span></div>
+    <div class="stat"><span class="n" id="sMastered">0</span><span class="l" id="lMastered">Öğrenildi</span></div>
+    <div class="stat"><span class="n" id="sRepeat">0</span><span class="l" id="lRepeat">Bugün Tekrar</span></div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- GÜNÜN KELİMESİ -->
+  <div class="stitle" id="todayTitle">📖 Günün Kelimesi</div>
+  <div class="today" id="todayCard">
+    <div id="todayContent">
+      <span class="wbadge" id="tBadge">—</span>
+      <div class="tw" id="tWord">—</div>
+      <div class="tp" id="tPron"></div>
+      <div class="tm" id="tMeaning"></div>
+      <div class="hdiv"></div>
+      <div class="flbl" id="tFamLbl">Kelime Ailesi</div>
+      <div class="chips" id="tFamily"></div>
+      <div class="exbox" id="tExbox">
+        <div class="ex-en" id="tExEn"></div>
+        <div class="ex-tr" id="tExTr"></div>
+      </div>
+    </div>
+    <div id="todayEmpty" class="today-empty" style="display:none">
+      <div class="today-empty-icon">📝</div>
+      <div class="today-empty-txt" id="todayEmptyTxt">Henüz kelime eklemedin.<br>Aşağıdan ilk kelimeni ekle!</div>
+    </div>
+  </div>
+
+  <!-- TEKRAR + QUIZ -->
+  <div class="two-col">
+    <div class="card">
+      <h3 id="repH">🔁 Tekrar Programı</h3>
+      <p class="csub" id="repSub">Spaced repetition — her aşamayı tıkla, geri al</p>
+      <div class="rep-list-scroll" id="repList"></div>
+    </div>
+    <div class="card">
+      <h3 id="quizH">🧠 Hızlı Quiz</h3>
+      <p class="csub" id="quizSub">Rastgele kelime — cevabı tahmin et</p>
+      <div class="qmode-toggle">
+        <button class="qm-btn on" id="modeEN" onclick="setMode('en-tr',this)">İngilizce → Türkçe</button>
+        <button class="qm-btn" id="modeTR" onclick="setMode('tr-en',this)">Türkçe → İngilizce</button>
+      </div>
+      <div class="quiz-box"><div><div class="qw" id="qWord">—</div><div class="qp" id="qPron"></div></div></div>
+      <div style="text-align:center;margin-bottom:8px;">
+        <button class="tts-btn" id="ttsQuizBtn" onclick="ttsQuizWord()" style="margin-top:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          <span id="ttsQuizLabel">Dinle</span>
+        </button>
+      </div>
+      <div class="q-ans" id="qAns"></div>
+      <div class="q-btns">
+        <button class="qbtn qprev" id="qBtnPrev" onclick="prevQ()">← Geri</button>
+        <button class="qbtn qshow" id="qBtnShow" onclick="toggleAns()">Cevap</button>
+        <button class="qbtn qnext" id="qBtnNext" onclick="nextQ()">İleri →</button>
+      </div>
+      <div class="qcount" id="qCount"></div>
+    </div>
+  </div>
+
+  <!-- İLERLEME + STREAK -->
+  <div class="two-col">
+    <div class="card">
+      <h3 id="progH">📊 İlerleme Durumum</h3>
+      <div style="margin-top:12px">
+        <div class="prog-wrap">
+          <div class="prog-lbl"><span id="pLbl0">🌱 Yeni (0 tekrar)</span><span id="p0">0</span></div>
+          <div class="prog-bar"><div class="prog-fill fa" id="b0"></div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbl"><span id="pLbl1">⚡ Çalışılıyor (1–3)</span><span id="p1">0</span></div>
+          <div class="prog-bar"><div class="prog-fill fb" id="b1"></div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-lbl"><span id="pLbl2">🏆 Öğrenildi (4+)</span><span id="p2">0</span></div>
+          <div class="prog-bar"><div class="prog-fill fc" id="b2"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 id="streakH">🔥 Çalışma Serisi</h3>
+      <div class="cal-wrap">
+        <div class="cal-head">
+          <button class="cal-nav" onclick="calNav(-1)">‹</button>
+          <span class="cal-month-lbl" id="calLbl"></span>
+          <button class="cal-nav" onclick="calNav(1)">›</button>
+        </div>
+        <div class="cal-wdays" id="calWD"></div>
+        <div class="cal-grid" id="calGrid"></div>
+        <span class="streak-num" id="streakNum">0</span>
+        <div class="streak-lbl" id="streakLbl">günlük seri 🎯</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KELİME LİSTESİ -->
+  <div class="tcard">
+    <div class="ttop">
+      <h3 id="listH">📚 Kelime Listem</h3>
+      <div class="ttop-right">
+        <div class="srch">
+          <span class="srch-ico">🔍</span>
+          <input id="srchIn" placeholder="Kelime ara..." oninput="renderTable()">
+        </div>
+        <select class="sort-sel" id="sortSel" onchange="renderTable()">
+          <option value="def" id="soDef">Varsayılan Sıra</option>
+          <option value="az" id="soAZ">A → Z</option>
+          <option value="za" id="soZA">Z → A</option>
+          <option value="mst" id="soMst">Ustalık ↓</option>
+          <option value="new" id="soNew">En Yeni</option>
+        </select>
+        <div class="ftabs">
+          <button class="tab on" onclick="filt('all',this)" id="fAll">Tümü</button>
+          <button class="tab" onclick="filt('adjective',this)" id="fAdj">Sıfat</button>
+          <button class="tab" onclick="filt('noun',this)" id="fNoun">İsim</button>
+          <button class="tab" onclick="filt('verb',this)" id="fVerb">Fiil</button>
+        </div>
+      </div>
+    </div>
+    <table>
+      <thead><tr>
+        <th style="width:28px"></th>
+        <th id="thWord">Kelime</th>
+        <th id="thType">Tür</th>
+        <th id="thMean">Anlam</th>
+        <th id="thNote">Not</th>
+        <th id="thRep">Tekrar</th>
+        <th id="thMast">Ustalık</th>
+        <th></th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="wcard-list" id="wcardList"></div>
+  </div>
+
+  <!-- YENİ KELİME / DÜZENLE -->
+  <div class="acard" id="formCard">
+    <h3 id="formTitle">➕ Yeni Kelime Ekle</h3>
+    <div class="edit-bar" id="editBar"></div>
+    <div class="dup-warn" id="dupWarn"></div>
+    <div class="fg4">
+      <div class="field"><label id="fLblW">Kelime</label><input id="iW" oninput="checkDup()" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="text"></div>
+      <div class="field"><label id="fLblP">Okunuş</label><input id="iP" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text"></div>
+      <div class="field"><label id="fLblM">Türkçe Anlam</label><input id="iM" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="text"></div>
+      <div class="field"><label id="fLblT">Tür</label>
+        <select id="iT">
+          <option value="adjective" id="oAdj">Sıfat</option>
+          <option value="noun" id="oNoun">İsim</option>
+          <option value="verb" id="oVerb">Fiil</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg2">
+      <div class="field"><label id="fLblEn">Örnek Cümle (İngilizce)</label><textarea id="iEn" autocomplete="off" autocorrect="off" spellcheck="false"></textarea></div>
+      <div class="field"><label id="fLblTr">Örnek Cümle (Türkçe)</label><textarea id="iTr" autocomplete="off" autocorrect="off" spellcheck="false"></textarea></div>
+    </div>
+    <div class="btn-row">
+      <button class="add-btn" id="submitBtn" onclick="submitWord()">Kelimeyi Ekle ✦</button>
+      <button class="cancel-btn" id="cancelBtn" onclick="cancelEdit()">Vazgeç</button>
+    </div>
+  </div>
+
+
+
+</div><!-- /appRoot -->
+
+<script>
+// ════════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════════
+let _loginMode = 'giris';
+function toFakeEmail(u){ return u.toLowerCase().replace(/[^a-z0-9._-]/g,'') + '@kelimedefteri.app'; }
+function switchLoginTab(mode){
+  _loginMode = mode;
+  document.getElementById('loginTabGiris').classList.toggle('on', mode==='giris');
+  document.getElementById('loginTabKayit').classList.toggle('on', mode==='kayit');
+  document.getElementById('loginSubmitBtn').textContent = mode==='giris' ? 'Giriş Yap' : 'Kayıt Ol';
+  document.getElementById('loginErr').textContent='';
+  document.getElementById('loginPass').setAttribute('autocomplete', mode==='giris' ? 'current-password' : 'new-password');
+}
+function doLogin(){
+  const raw = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent='';
+  if(!raw){errEl.textContent='Kullanıcı adı gerekli.';return;}
+  if(!pass){errEl.textContent='Şifre gerekli.';return;}
+  if(_loginMode==='kayit' && raw.length < 3){errEl.textContent='Kullanıcı adı en az 3 karakter olmalı.';return;}
+  const email = toFakeEmail(raw);
+  const {auth, createUserWithEmailAndPassword, signInWithEmailAndPassword} = window._AUTH;
+  const fn = _loginMode==='kayit' ? createUserWithEmailAndPassword : signInWithEmailAndPassword;
+  fn(auth, email, pass).catch(e=>{
+    const msgs={
+      'auth/email-already-in-use':'Bu kullanıcı adı zaten alınmış.',
+      'auth/wrong-password':'Hatalı şifre.',
+      'auth/user-not-found':'Kullanıcı bulunamadı.',
+      'auth/invalid-email':'Geçersiz kullanıcı adı.',
+      'auth/weak-password':'Şifre en az 6 karakter olmalı.',
+      'auth/invalid-credential':'Kullanıcı adı veya şifre hatalı.'
+    };
+    errEl.textContent = msgs[e.code] || 'Hata: ' + e.code;
+  });
+}
+function doLogout(){
+  // Unsubscribe Firebase listeners before sign-out to prevent errors
+  if(window._fbUnsub){ try{window._fbUnsub();}catch(e){} window._fbUnsub=null; }
+  if(window._fbStreakUnsub){ try{window._fbStreakUnsub();}catch(e){} window._fbStreakUnsub=null; }
+  // Reset state
+  words=[]; streak=[];
+  const {auth, signOut} = window._AUTH;
+  signOut(auth).catch(e=>console.error('logout error',e));
+}
+window.switchLoginTab=switchLoginTab; window.doLogin=doLogin; window.doLogout=doLogout;
+
+// ════════════════════════════════════════
+// LANGUAGE
+// ════════════════════════════════════════
+let lang = 'tr';
+let targetLang = localStorage.getItem('kd_target') || 'en';
+
+const TX = {
+  tr:{
+    loading:'Veriler yükleniyor...',
+    statWord:'Kelime', statStreak:'Gün Serisi', statMastered:'Öğrenildi', statRepeat:'Bugün Tekrar',
+    todayTitle:'📖 Günün Kelimesi', famLbl:'Kelime Ailesi',
+    repH:'🔁 Tekrar Programı', repSub:'Spaced repetition — her aşamayı tıkla, geri al',
+    quizH:'🧠 Hızlı Quiz', quizSub:'Rastgele kelime — cevabı tahmin et',
+    modeEN:'İngilizce → Türkçe', modeTR:'Türkçe → İngilizce',
+    qBtnPrev:'← Geri', qBtnShow:'Cevap', qBtnShowHide:'Gizle', qBtnNext:'İleri →',
+    progH:'📊 İlerleme Durumum',
+    pLbl0:'🌱 Yeni (0 tekrar)', pLbl1:'⚡ Çalışılıyor (1–3)', pLbl2:'🏆 Öğrenildi (4+)',
+    streakH:'🔥 Çalışma Serisi', streakLbl:'günlük seri 🎯',
+    wdays:['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'],
+    months:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
+    listH:'📚 Kelime Listem', srchPh:'Kelime ara...',
+    soDef:'Varsayılan Sıra', soAZ:'A → Z', soZA:'Z → A', soMst:'Ustalık ↓', soNew:'En Yeni',
+    fAll:'Tümü', fAdj:'Sıfat', fNoun:'İsim', fVerb:'Fiil',
+    thWord:'Kelime', thType:'Tür', thMean:'Anlam', thNote:'Not', thRep:'Tekrar', thMast:'Ustalık',
+    formTitle:'➕ Yeni Kelime Ekle', editFormTitle:'✏️ Kelimeyi Düzenle',
+    fLblW:'Kelime', fLblP:'Okunuş', fLblM:'Türkçe Anlam', fLblT:'Tür',
+    fLblEn:'Örnek Cümle (İngilizce)', fLblTr:'Örnek Cümle (Türkçe)',
+    iWPh:'örn. abundant', iPPh:'/əˈbʌndənt/', iMPh:'örn. bol, çok', iEnPh:'She has an abundant knowledge of history.', iTrPh:'Tarih hakkında geniş bir bilgiye sahip.',
+    oAdj:'Sıfat', oNoun:'İsim', oVerb:'Fiil',
+    submitBtn:'Kelimeyi Ekle ✦', updateBtn:'Güncelle ✦', cancelBtn:'Vazgeç',
+    dupWarn:'⚠️ Bu kelime zaten listende var!',
+    editBar:(w)=>`✏️ "${w}" düzenleniyor`,
+    noWords:'Henüz kelime yok 📝', repEmpty:'Henüz kelime yok',
+    typeFull:{adjective:'Sıfat · Adjective',noun:'İsim · Noun',verb:'Fiil · Verb'},
+    types:{adjective:'Sıfat',noun:'İsim',verb:'Fiil'},
+    repToday:'📌 Bugün Tekrar', repSoon:'⏳ Yaklaşan', repDone:'✅ Tamamlananlar',
+    repLbls:['Bugün','3 gün','1 hafta','1 ay'],
+    repDots:['dg','dm','dp','dr'],
+    overdue:'⚠️ Gecikti', todayLbl:'Bugün!', tomorrow:'yarın', daysLater:' gün sonra', doneTxt:'✓ tamam',
+    wordOf:'Anlamı:',
+    suffix:{adjective:[['isim','-ness'],['zarf','-ly']],noun:[['sıfat','-al'],['fiil','-ize']],verb:[['isim','-tion'],['sıfat','-ive']]},
+    wdMeaning:'Anlam',wdEx:'Örnek Cümle',wdFam:'Kelime Ailesi',wdReps:'Tekrar',wdMast:'Ustalık',wdNote:'Not',wdAdded:'Eklenme',
+    wdEdit:'✏️ Düzenle',wdClose:'Kapat',
+    delTitle:'🗑️ Kelimeyi sil?', delOk:'Evet, sil', delCancel:'Vazgeç',
+    delTxt:(w)=>`"${w}" kelimesini silmek istediğine emin misin? Bu işlem geri alınamaz.`,
+    noteTitle:'📝 Not Ekle', noteOk:'Kaydet', noteCancel:'Vazgeç',
+    noteTxt:(w)=>`"${w}" için not:`,
+    noteTA:'Bu kelime hakkında bir not yaz…',
+    toastAdded:(w)=>`✦ "${w}" eklendi!`, toastUpdated:(w)=>`✏️ "${w}" güncellendi!`,
+    toastDeleted:(w)=>`🗑 "${w}" silindi`,
+    toastRepPlus:'📈 Tekrar artırıldı', toastRepMinus:'📉 Tekrar azaltıldı',
+    toastNote:'📝 Not kaydedildi', toastOrder:'↕️ Sıra güncellendi',
+    toastDragFilter:'⚠️ Sıra değiştirmek için "Tümü" filtresini seç',
+    toastShuffle:'🔀 Tüm kelimeler bitti, karıştırıldı!',
+    toastRequired:'⚠️ Kelime ve anlam zorunludur!',
+    toastDup:'⚠️ Bu kelime zaten listende!',
+    toastDone:'✓ Tamamlandı', toastUndo:'↩ Geri alındı',
+    pWords:'kelime',
+  },
+  en:{
+    loading:'Loading data...',
+    statWord:'Words', statStreak:'Day Streak', statMastered:'Mastered', statRepeat:"Today's Review",
+    todayTitle:'📖 Word of the Day', famLbl:'Word Family',
+    repH:'🔁 Review Schedule', repSub:'Spaced repetition — click each stage to toggle',
+    quizH:'🧠 Quick Quiz', quizSub:'Random word — guess the answer',
+    modeEN:'English → Turkish', modeTR:'Turkish → English',
+    qBtnPrev:'← Back', qBtnShow:'Answer', qBtnShowHide:'Hide', qBtnNext:'Next →',
+    progH:'📊 My Progress',
+    pLbl0:'🌱 New (0 reviews)', pLbl1:'⚡ Learning (1–3)', pLbl2:'🏆 Mastered (4+)',
+    streakH:'🔥 Study Streak', streakLbl:'day streak 🎯',
+    wdays:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    listH:'📚 My Word List', srchPh:'Search words...',
+    soDef:'Default Order', soAZ:'A → Z', soZA:'Z → A', soMst:'Mastery ↓', soNew:'Newest',
+    fAll:'All', fAdj:'Adj', fNoun:'Noun', fVerb:'Verb',
+    thWord:'Word', thType:'Type', thMean:'Meaning', thNote:'Note', thRep:'Reviews', thMast:'Mastery',
+    formTitle:'➕ Add New Word', editFormTitle:'✏️ Edit Word',
+    fLblW:'Word', fLblP:'Pronunciation', fLblM:'Turkish Meaning', fLblT:'Type',
+    fLblEn:'Example Sentence (English)', fLblTr:'Example Sentence (Turkish)',
+    iWPh:'e.g. abundant', iPPh:'/əˈbʌndənt/', iMPh:'e.g. bol, çok', iEnPh:'She has an abundant knowledge of history.', iTrPh:'Tarih hakkında geniş bir bilgiye sahip.',
+    oAdj:'Adjective', oNoun:'Noun', oVerb:'Verb',
+    submitBtn:'Add Word ✦', updateBtn:'Update ✦', cancelBtn:'Cancel',
+    dupWarn:'⚠️ This word is already in your list!',
+    editBar:(w)=>`✏️ Editing "${w}"`,
+    noWords:'No words yet 📝', repEmpty:'No words yet',
+    typeFull:{adjective:'Adjective',noun:'Noun',verb:'Verb'},
+    types:{adjective:'Adj',noun:'Noun',verb:'Verb'},
+    repToday:'📌 Due Today', repSoon:'⏳ Upcoming', repDone:'✅ Completed',
+    repLbls:['Today','3 days','1 week','1 month'],
+    repDots:['dg','dm','dp','dr'],
+    overdue:'⚠️ Overdue', todayLbl:'Today!', tomorrow:'tomorrow', daysLater:' days left', doneTxt:'✓ done',
+    wordOf:'Meaning:',
+    suffix:{adjective:[['noun','-ness'],['adverb','-ly']],noun:[['adjective','-al'],['verb','-ize']],verb:[['noun','-tion'],['adjective','-ive']]},
+    wdMeaning:'Meaning',wdEx:'Example',wdFam:'Word Family',wdReps:'Reviews',wdMast:'Mastery',wdNote:'Note',wdAdded:'Added',
+    wdEdit:'✏️ Edit',wdClose:'Close',
+    delTitle:'🗑️ Delete word?', delOk:'Yes, delete', delCancel:'Cancel',
+    delTxt:(w)=>`Delete "${w}"? This cannot be undone.`,
+    noteTitle:'📝 Add Note', noteOk:'Save', noteCancel:'Cancel',
+    noteTxt:(w)=>`Note for "${w}":`,
+    noteTA:'Write a note about this word…',
+    toastAdded:(w)=>`✦ "${w}" added!`, toastUpdated:(w)=>`✏️ "${w}" updated!`,
+    toastDeleted:(w)=>`🗑 "${w}" deleted`,
+    toastRepPlus:'📈 Review increased', toastRepMinus:'📉 Review decreased',
+    toastNote:'📝 Note saved', toastOrder:'↕️ Order updated',
+    toastDragFilter:'⚠️ Select "All" filter to reorder',
+    toastShuffle:'🔀 All words done, reshuffled!',
+    toastRequired:'⚠️ Word and meaning are required!',
+    toastDup:'⚠️ This word is already in your list!',
+    toastDone:'✓ Done', toastUndo:'↩ Undone',
+    pWords:'words',
+  }
+};
+
+function getMeaningLabel(){
+  const tgtNames={en:'İngilizce',zh:'Çince',ar:'Arapça',es:'İspanyolca',ja:'Japonca',fr:'Fransızca',de:'Almanca'};
+  const tgtNamesEN={en:'English',zh:'Chinese',ar:'Arabic',es:'Spanish',ja:'Japanese',fr:'French',de:'German'};
+  if(lang==='tr') return (tgtNames[targetLang]||targetLang)+' Anlam';
+  return (tgtNamesEN[targetLang]||targetLang)+' Meaning';
+}
+
+function s(key,...args){
+  const v = TX[lang][key];
+  if(typeof v==='function') return v(...args);
+  return v ?? key;
+}
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let words=[], streak=[];
+const todayStr = new Date().toDateString();
+const todayDateTR = new Date().toLocaleDateString('tr-TR');
+let quizOrder=[], quizPos=0, quizMode='en-tr', ansVisible=false;
+let pendingDel=null, pendingNote=null, editingIdx=null;
+let curFilter='all', dragSrcIdx=null;
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+
+const BC={adjective:'ba',noun:'bn',verb:'bv'};
+
+// ════════════════════════════════════════
+// FIREBASE
+// ════════════════════════════════════════
+document.addEventListener('fb-ready',()=>{
+  loadTargetData();
+});
+
+function loadTargetData(){
+  const {db,ref,set,onValue}=window._FB;
+  const uid = window._currentUser ? window._currentUser.uid : 'guest';
+  document.getElementById('fbTxt').textContent = s('loading');
+
+  // Unsubscribe previous listeners if any
+  if(window._fbUnsub){ try{window._fbUnsub();}catch(e){} }
+  if(window._fbStreakUnsub){ try{window._fbStreakUnsub();}catch(e){} }
+
+  // Per-user paths: users/{uid}/words_{lang} (en uses words for legacy compat within user scope)
+  const wordsPath = `users/${uid}/` + (targetLang === 'en' ? 'words' : 'words_' + targetLang);
+
+  window._fbUnsub = onValue(ref(db, wordsPath),(snap)=>{
+    const d=snap.val();
+    if(d){
+      words=Object.values(d).map(w=>({
+        id:w.id||w.word,word:w.word||'',pron:w.pron||'',type:w.type||'noun',
+        meaning:w.meaning||'',exEn:w.exEn||'',exTr:w.exTr||'',
+        date:w.date||todayDateTR,reps:w.reps||0,
+        rd:Array.isArray(w.rd)?w.rd:[false,false,false,false],note:w.note||''
+      }));
+    } else {
+      words=[];
+    }
+    rebuildAll();
+    document.getElementById('fbLoad').classList.add('hide');
+    setTimeout(()=>document.getElementById('fbLoad').style.display='none',500);
+  });
+
+  window._fbStreakUnsub = onValue(ref(db,`users/${uid}/streak`),(snap)=>{
+    const d=snap.val();
+    streak=d?(Array.isArray(d)?d:Object.values(d)):[];
+    if(!streak.includes(todayStr)){
+      streak.push(todayStr);
+      set(ref(db,`users/${uid}/streak`),streak);
+    }
+    buildCal();
+    updateStats();
+  });
+
+  setTimeout(()=>{
+    document.getElementById('fbLoad').classList.add('hide');
+    setTimeout(()=>document.getElementById('fbLoad').style.display='none',500);
+  },1000);
+}
+
+function saveAll(){
+  const {db,ref,set}=window._FB;
+  const uid = window._currentUser ? window._currentUser.uid : 'guest';
+  const obj={};
+  words.forEach(w=>{
+    const k=(w.id||w.word).replace(/[.#$\/\[\]]/g,'_');
+    obj[k]={...w,id:k};
+  });
+  const path = `users/${uid}/` + (targetLang === 'en' ? 'words' : 'words_' + targetLang);
+  set(ref(db, path), obj);
+}
+
+function rebuildAll(){
+  applyLang();
+  updateQuizModeLabels();
+  renderToday(); buildRepeat(); updateStats(); renderTable(); shuffleOrder(); renderQuiz();
+}
+
+// ════════════════════════════════════════
+// THEME
+// ════════════════════════════════════════
+function setTheme(name, dotEl){
+  if(name === 'default'){
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', name);
+  }
+  localStorage.setItem('kd_theme', name);
+  document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+  const target = dotEl || document.querySelector(`.theme-dot[data-t="${name}"]`);
+  if(target) target.classList.add('active');
+}
+(function(){
+  const t = localStorage.getItem('kd_theme') || 'default';
+  setTheme(t);
+})();
+
+// ════════════════════════════════════════
+// LANGUAGE — single source of truth
+// ════════════════════════════════════════
+function setLang(l){
+  lang=l;
+  updateQuizModeLabels();
+  applyLang();
+  renderToday(); buildRepeat(); buildCal(); updateStats(); renderTable(); renderQuiz();
+}
+
+function setTarget(tgt, btn){
+  targetLang = tgt;
+  localStorage.setItem('kd_target', tgt);
+  document.querySelectorAll('.tgt-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  // Reset words and reload from Firebase
+  words = [];
+  rebuildAll();
+  if(window._FB){
+    document.getElementById('fbLoad').style.display='flex';
+    document.getElementById('fbLoad').classList.remove('hide');
+    loadTargetData();
+  }
+}
+
+function applyLang(){
+  // Static UI strings — all set by ID, no data-* hackery
+  const ids={
+    lTotal:'statWord',lStreak:'statStreak',lMastered:'statMastered',lRepeat:'statRepeat',
+    todayTitle:'todayTitle',tFamLbl:'famLbl',
+    repH:'repH',repSub:'repSub',quizH:'quizH',quizSub:'quizSub',
+    qBtnPrev:'qBtnPrev',qBtnNext:'qBtnNext',
+    progH:'progH',pLbl0:'pLbl0',pLbl1:'pLbl1',pLbl2:'pLbl2',
+    streakH:'streakH',streakLbl:'streakLbl',
+    listH:'listH',
+    soDef:'soDef',soAZ:'soAZ',soZA:'soZA',soMst:'soMst',soNew:'soNew',
+    fAll:'fAll',fAdj:'fAdj',fNoun:'fNoun',fVerb:'fVerb',
+    thWord:'thWord',thType:'thType',thMean:'thMean',thNote:'thNote',thRep:'thRep',thMast:'thMast',
+    fLblW:'fLblW',fLblP:'fLblP',fLblM:'fLblM',fLblT:'fLblT',fLblEn:'fLblEn',fLblTr:'fLblTr',
+    oAdj:'oAdj',oNoun:'oNoun',oVerb:'oVerb',
+    cancelBtn:'cancelBtn',
+    streakLbl:'streakLbl',
+  };
+  for(const [elId,txKey] of Object.entries(ids)){
+    const el=document.getElementById(elId);
+    if(el) el.textContent=s(txKey);
+  }
+  // Form title (depends on edit mode)
+  document.getElementById('formTitle').textContent = editingIdx!==null ? s('editFormTitle') : s('formTitle');
+  // Submit button
+  document.getElementById('submitBtn').textContent = editingIdx!==null ? s('updateBtn') : s('submitBtn');
+  // Placeholders
+  document.getElementById('iW').placeholder = s('iWPh');
+  document.getElementById('iP').placeholder = s('iPPh');
+  document.getElementById('iM').placeholder = s('iMPh');
+  document.getElementById('iEn').placeholder = s('iEnPh');
+  document.getElementById('iTr').placeholder = s('iTrPh');
+  document.getElementById('srchIn').placeholder = s('srchPh');
+  // Dynamic meaning label based on target language
+  const fLblMEl = document.getElementById('fLblM');
+  if(fLblMEl) fLblMEl.textContent = getMeaningLabel();
+  // Quiz answer button (show/hide state)
+  document.getElementById('qBtnShow').textContent = ansVisible ? s('qBtnShowHide') : s('qBtnShow');
+  // Dup warn / edit bar
+  document.getElementById('dupWarn').textContent = s('dupWarn');
+  if(editingIdx!==null && words[editingIdx])
+    document.getElementById('editBar').textContent = s('editBar', words[editingIdx].word);
+  // Note TA placeholder
+  document.getElementById('noteInput').placeholder = s('noteTA');
+  // Quiz TTS label
+  const ttsQL=document.getElementById('ttsQuizLabel');
+  if(ttsQL) ttsQL.textContent=lang==='tr'?'Dinle':'Listen';
+  // Modal static labels
+  document.getElementById('delTitle').textContent = s('delTitle');
+  document.getElementById('delOk').textContent = s('delOk');
+  document.getElementById('delCancel').textContent = s('delCancel');
+  document.getElementById('noteTitle').textContent = s('noteTitle');
+  document.getElementById('noteOk').textContent = s('noteOk');
+  document.getElementById('noteCancel').textContent = s('noteCancel');
+
+}
+
+// ════════════════════════════════════════
+// HEADER DATE
+// ════════════════════════════════════════
+document.getElementById('hDate').textContent =
+  new Date().toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+// ════════════════════════════════════════
+// TODAY CARD
+// ════════════════════════════════════════
+function _ttsIcon(){
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>`;
+}
+function renderToday(){
+  const content=document.getElementById('todayContent');
+  const empty=document.getElementById('todayEmpty');
+  const emptyTxt=document.getElementById('todayEmptyTxt');
+  if(!words.length){
+    content.style.display='none';
+    empty.style.display='flex';
+    emptyTxt.innerHTML = lang==='tr'
+      ? 'Henüz kelime eklemedin.<br>Aşağıdan ilk kelimeni ekle!'
+      : 'No words yet.<br>Add your first word below!';
+    return;
+  }
+  content.style.display='';
+  empty.style.display='none';
+  const w=words[0];
+  const b=document.getElementById('tBadge');
+  b.textContent=s('typeFull')[w.type]||w.type;
+  b.className='wbadge '+(BC[w.type]||'ba');
+  document.getElementById('tWord').textContent=w.word;
+  document.getElementById('tPron').textContent=w.pron||'';
+  document.getElementById('tMeaning').innerHTML=s('wordOf')+' <strong>'+w.meaning+'</strong>';
+  document.getElementById('tExEn').textContent=w.exEn||'';
+  document.getElementById('tExTr').textContent=w.exTr||'';
+  // TTS button for today card
+  let ttsTodayEl=document.getElementById('ttsToday');
+  if(!ttsTodayEl){
+    ttsTodayEl=document.createElement('button');
+    ttsTodayEl.id='ttsToday';
+    ttsTodayEl.className='tts-btn';
+    ttsTodayEl.onclick=ttsTodayWord;
+    document.getElementById('todayContent').insertBefore(ttsTodayEl, document.getElementById('tBadge'));
+  }
+  ttsTodayEl.innerHTML=_ttsIcon()+(lang==='tr'?'Dinle':'Listen');
+  // Hide example box if no examples
+  const exbox=document.getElementById('tExbox');
+  if(exbox) exbox.style.display=(w.exEn||w.exTr)?'':'none';
+  const fam=document.getElementById('tFamily'); fam.innerHTML='';
+  (s('suffix')[w.type]||[]).forEach(([tp,sf])=>{
+    const d=document.createElement('div'); d.className='chip';
+    d.innerHTML=`<span class="chip-w">${w.word}${sf}</span><span class="chip-t">${tp}</span>`;
+    fam.appendChild(d);
+  });
+}
+
+// ════════════════════════════════════════
+// STATS
+// ════════════════════════════════════════
+function updateStats(){
+  const tot=words.length,mast=words.filter(w=>w.reps>=4).length;
+  const rep=words.filter(w=>w.rd&&w.rd.some(Boolean)).length;
+  document.getElementById('sTotal').textContent=tot;
+  document.getElementById('sMastered').textContent=mast;
+  document.getElementById('sRepeat').textContent=rep;
+  document.getElementById('sStreak').textContent=streak.length;
+  const T=tot||1,n0=words.filter(w=>w.reps===0).length,n1=words.filter(w=>w.reps>=1&&w.reps<=3).length;
+  document.getElementById('p0').textContent=n0+' '+s('pWords');
+  document.getElementById('b0').style.width=(n0/T*100)+'%';
+  document.getElementById('p1').textContent=n1+' '+s('pWords');
+  document.getElementById('b1').style.width=(n1/T*100)+'%';
+  document.getElementById('p2').textContent=mast+' '+s('pWords');
+  document.getElementById('b2').style.width=(mast/T*100)+'%';
+}
+
+// ════════════════════════════════════════
+// CALENDAR — Pazartesi başlar, bugünü gösterir, streak günlerini renklendirir
+// ════════════════════════════════════════
+function buildCal(){
+  const wdEl=document.getElementById('calWD');
+  const gridEl=document.getElementById('calGrid');
+  const lblEl=document.getElementById('calLbl');
+
+  lblEl.textContent=s('months')[calMonth]+' '+calYear;
+
+  // Weekday headers Mon–Sun
+  wdEl.innerHTML=s('wdays').map(d=>`<div class="cal-wd">${d}</div>`).join('');
+
+  // First day offset (Mon=0)
+  const firstDay=new Date(calYear,calMonth,1).getDay(); // 0=Sun
+  const offset=(firstDay+6)%7; // Mon-based
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+
+  // Build set of streak dates for quick lookup
+  const streakSet=new Set(streak.map(s2=>new Date(s2).toDateString()));
+
+  let html='';
+  for(let i=0;i<offset;i++) html+=`<div class="cal-cell emp"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const date=new Date(calYear,calMonth,d);
+    const isToday=date.toDateString()===today.toDateString();
+    const isFuture=date>today;
+    const isHit=streakSet.has(date.toDateString());
+    let cls='cal-cell';
+    if(isFuture) cls+=' off';
+    else if(isHit) cls+=' hit';
+    else cls+=' off';
+    if(isToday) cls+=' now';
+    html+=`<div class="${cls}">${d}</div>`;
+  }
+  gridEl.innerHTML=html;
+  document.getElementById('streakNum').textContent=streak.length;
+  document.getElementById('streakLbl').textContent=s('streakLbl');
+}
+
+function calNav(dir){
+  calMonth+=dir;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  buildCal();
+}
+
+// ════════════════════════════════════════
+// REPEAT
+// ════════════════════════════════════════
+function buildRepeat(){
+  const con=document.getElementById('repList');
+  con.innerHTML='';
+  if(!words.length){con.innerHTML=`<div class="rep-empty">${s('repEmpty')}</div>`;return;}
+  const repDays=[0,3,7,30];
+  const lbList=s('repLbls'); const dotList=s('repDots');
+  const today=new Date();today.setHours(0,0,0,0);
+  const due=[],soon=[],done=[];
+
+  words.forEach((w,wi)=>{
+    const ad=parseDate(w.date);
+    w.rd=w.rd||[false,false,false,false];
+    repDays.forEach((d,si)=>{
+      const dd=new Date(ad);dd.setDate(dd.getDate()+d);
+      const isDue=dd<=today;
+      if(isDue&&!w.rd[si]) due.push({wi,si,word:w.word,lbl:lbList[si],dot:dotList[si],over:dd<today});
+      else if(!isDue&&!w.rd[si]) soon.push({wi,si,word:w.word,lbl:lbList[si],dot:dotList[si],diff:Math.ceil((dd-today)/864e5)});
+      else if(w.rd[si]) done.push({wi,si,word:w.word,lbl:lbList[si],dot:dotList[si]});
+    });
+  });
+  soon.sort((a,b)=>a.diff-b.diff);
+
+  function mkRow(item,isDue){
+    const div=document.createElement('div');div.className='rep-item';
+    const st=isDue?(item.over?s('overdue'):s('todayLbl')):(item.diff===1?s('tomorrow'):item.diff+s('daysLater'));
+    div.innerHTML=`<div class="rdot ${item.dot}"></div>
+      <div class="rword" title="${item.word}">${item.word}</div>
+      <div class="rdate">${item.lbl} · <span style="color:${isDue?'var(--gold)':'var(--muted)'}">${st}</span></div>
+      <button class="rtog" onclick="togRep(${item.wi},${item.si})">○</button>`;
+    con.appendChild(div);
+  }
+  function mkDoneRow(item){
+    const div=document.createElement('div');div.className='rep-item';
+    div.innerHTML=`<div class="rdot ${item.dot}"></div>
+      <div class="rword" title="${item.word}">${item.word}</div>
+      <div class="rdate">${item.lbl} · <span style="color:var(--mint)">${s('doneTxt')}</span></div>
+      <button class="rtog on" onclick="togRep(${item.wi},${item.si})">✓</button>`;
+    con.appendChild(div);
+  }
+  function addSection(title,items,isDue){
+    if(!items.length)return;
+    const lbl=document.createElement('div');lbl.className='rep-section-title';lbl.textContent=title;
+    con.appendChild(lbl);
+    items.forEach(i=>isDue===null?mkDoneRow(i):mkRow(i,isDue));
+  }
+  addSection(s('repToday'),due,true);
+  addSection(s('repSoon'),soon.slice(0,5),false);
+  addSection(s('repDone'),done,null);
+  if(!due.length&&!soon.length&&!done.length)
+    con.innerHTML=`<div class="rep-empty">${s('repEmpty')}</div>`;
+}
+
+function parseDate(str){
+  if(!str)return new Date();
+  const p=str.split('.');
+  if(p.length===3)return new Date(+p[2],+p[1]-1,+p[0]);
+  return new Date(str);
+}
+
+function togRep(wi,si){
+  words[wi].rd=words[wi].rd||[false,false,false,false];
+  words[wi].rd[si]=!words[wi].rd[si];
+  saveAll();buildRepeat();updateStats();
+  toast(words[wi].rd[si]?s('toastDone'):s('toastUndo'));
+}
+
+// ════════════════════════════════════════
+// QUIZ — toggle answer show/hide
+// ════════════════════════════════════════
+function shuffleOrder(){
+  quizOrder=words.map((_,i)=>i);
+  for(let i=quizOrder.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [quizOrder[i],quizOrder[j]]=[quizOrder[j],quizOrder[i]];
+  }
+  quizPos=0;
+}
+function getTargetLangName(code){
+  const names={
+    tr:{en:'İngilizce',zh:'Çince',ar:'Arapça',es:'İspanyolca',ja:'Japonca',fr:'Fransızca',de:'Almanca'},
+    en:{en:'English',zh:'Chinese',ar:'Arabic',es:'Spanish',ja:'Japanese',fr:'French',de:'German'}
+  };
+  return (names[lang]||names.tr)[code]||code.toUpperCase();
+}
+
+function updateQuizModeLabels(){
+  const tName = getTargetLangName(targetLang);
+  const nativeName = lang==='tr' ? 'Türkçe' : 'Turkish';
+  document.getElementById('modeEN').textContent = tName + ' → ' + nativeName;
+  document.getElementById('modeTR').textContent = nativeName + ' → ' + tName;
+}
+
+function setMode(m,btn){
+  quizMode=m;
+  document.querySelectorAll('.qm-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  shuffleOrder();renderQuiz();
+}
+function renderQuiz(){
+  ansVisible=false;
+  const ans=document.getElementById('qAns');
+  ans.style.display='none';
+  document.getElementById('qBtnShow').textContent=s('qBtnShow');
+  if(!words.length){document.getElementById('qWord').textContent=s('repEmpty');return;}
+  if(!quizOrder.length||quizPos>=quizOrder.length)shuffleOrder();
+  const w=words[quizOrder[quizPos]];
+  if(quizMode==='en-tr'){
+    document.getElementById('qWord').textContent=w.word;
+    document.getElementById('qPron').textContent=w.pron;
+    ans.textContent=w.meaning;
+  } else {
+    document.getElementById('qWord').textContent=w.meaning;
+    document.getElementById('qPron').textContent='';
+    ans.textContent=w.word+(w.pron?' ('+w.pron+')':'');
+  }
+  document.getElementById('qCount').textContent=(quizPos+1)+' / '+quizOrder.length;
+}
+function toggleAns(){
+  if(!words.length)return;
+  ansVisible=!ansVisible;
+  document.getElementById('qAns').style.display=ansVisible?'block':'none';
+  document.getElementById('qBtnShow').textContent=ansVisible?s('qBtnShowHide'):s('qBtnShow');
+}
+function nextQ(){
+  if(!words.length)return;
+  if(quizPos<quizOrder.length-1)quizPos++;
+  else{shuffleOrder();toast(s('toastShuffle'));}
+  renderQuiz();
+}
+function prevQ(){if(!words.length)return;if(quizPos>0)quizPos--;renderQuiz();}
+
+// ════════════════════════════════════════
+// TABLE
+// ════════════════════════════════════════
+function renderTable(){
+  const tbody=document.getElementById('tbody');
+  const wcardList=document.getElementById('wcardList');
+  const q=(document.getElementById('srchIn').value||'').toLowerCase().trim();
+  const sort=document.getElementById('sortSel').value;
+  let list=curFilter==='all'?[...words]:words.filter(w=>w.type===curFilter);
+  if(q)list=list.filter(w=>w.word.toLowerCase().includes(q)||w.meaning.toLowerCase().includes(q)||(w.pron&&w.pron.toLowerCase().includes(q)));
+  if(sort==='az') list=[...list].sort((a,b)=>a.word.localeCompare(b.word));
+  else if(sort==='za') list=[...list].sort((a,b)=>b.word.localeCompare(a.word));
+  else if(sort==='mst') list=[...list].sort((a,b)=>(b.reps||0)-(a.reps||0));
+  else if(sort==='new') list=[...list].sort((a,b)=>parseDate(b.date)-parseDate(a.date));
+  const empty=`<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--muted);font-size:14px;">${s('noWords')}</td></tr>`;
+  const emptyCard=`<div style="text-align:center;padding:28px;color:var(--muted);font-size:14px;">${s('noWords')}</div>`;
+  if(!list.length){ tbody.innerHTML=empty; if(wcardList)wcardList.innerHTML=emptyCard; return; }
+  const typs=s('types');
+  // Desktop table rows
+  tbody.innerHTML=list.map(w=>{
+    const idx=words.indexOf(w),reps=w.reps||0,pct=Math.min(reps*25,100);
+    const noteHtml=w.note?`<span class="note-txt" title="${w.note}">${w.note}</span>`:`<span style="color:var(--muted);font-size:12px">—</span>`;
+    return `<tr draggable="true" data-idx="${idx}" ondragstart="dragStart(event,${idx})" ondragover="dragOver(event)" ondrop="dropOn(event,${idx})" ondragend="dragEnd(event)">
+      <td><span class="drag-handle">⠿</span></td>
+      <td><div class="tdw" onclick="openDetail(${idx})">${w.word}</div><div class="tdp">${w.pron}</div></td>
+      <td><span class="wbadge ${BC[w.type]||'ba'}" style="font-size:10px;padding:3px 8px">${typs[w.type]||w.type}</span></td>
+      <td style="color:var(--muted);font-size:12px;max-width:110px">${w.meaning}</td>
+      <td class="note-cell">${noteHtml}<button class="note-btn" onclick="openNote(${idx})">✏️</button></td>
+      <td><div class="rep-ctrl"><button class="rb rm" onclick="chRep(${idx},-1)">−</button><span class="rep-n">${reps}/4</span><button class="rb rp" onclick="chRep(${idx},1)">+</button></div></td>
+      <td><div class="mbar-wrap"><div class="mbar" style="width:${pct}%"></div></div></td>
+      <td style="display:flex;gap:3px;align-items:center;"><button class="edit-btn" onclick="openEdit(${idx})">✏️</button><button class="del-btn" onclick="askDel(${idx})">🗑</button></td>
+    </tr>`;
+  }).join('');
+  // Mobile cards
+  if(wcardList){
+    wcardList.innerHTML=list.map(w=>{
+      const idx=words.indexOf(w),reps=w.reps||0,pct=Math.min(reps*25,100);
+      return `<div class="wcard">
+        <div class="wcard-top">
+          <div><div class="wcard-word" onclick="openDetail(${idx})">${w.word}</div>${w.pron?`<div class="wcard-pron">${w.pron}</div>`:''}</div>
+          <span class="wbadge ${BC[w.type]||'ba'}" style="font-size:10px;padding:3px 9px;margin-bottom:0;">${typs[w.type]||w.type}</span>
+        </div>
+        <div class="wcard-meaning">${w.meaning}</div>
+        <div class="wcard-actions">
+          <div class="wcard-rep">
+            <button class="rb rm" onclick="chRep(${idx},-1)">−</button>
+            <span class="wcard-rep-n">${reps}/4</span>
+            <button class="rb rp" onclick="chRep(${idx},1)">+</button>
+          </div>
+          <div class="wcard-mbar"><div class="wcard-mfill" style="width:${pct}%"></div></div>
+          <div class="wcard-btns">
+            <button class="note-btn" style="opacity:.6;font-size:15px;" onclick="openNote(${idx})">📝</button>
+            <button class="edit-btn" onclick="openEdit(${idx})">✏️</button>
+            <button class="del-btn" onclick="askDel(${idx})">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function chRep(idx,d){
+  words[idx].reps=Math.max(0,Math.min(4,(words[idx].reps||0)+d));
+  saveAll();updateStats();renderTable();
+  toast(d>0?s('toastRepPlus'):s('toastRepMinus'));
+}
+function filt(type,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  btn.classList.add('on');curFilter=type;renderTable();
+}
+
+// ════════════════════════════════════════
+// WORD DETAIL POP-UP
+// ════════════════════════════════════════
+function openDetail(idx){
+  const w=words[idx]; if(!w)return;
+  const pct=Math.min((w.reps||0)*25,100);
+  const tfull=s('typeFull');
+  const suff=s('suffix');
+  const famHtml=(suff[w.type]||[]).map(([tp,sf])=>`
+    <div class="wdm-chip"><div class="wdm-chip-w">${w.word}${sf}</div><div class="wdm-chip-t">${tp}</div></div>`).join('');
+  const exHtml=(w.exEn||w.exTr)?`
+    <div class="wdm-sec"><div class="wdm-lbl">${s('wdEx')}</div>
+    <div class="wdm-example">
+      ${w.exEn?`<div class="wdm-ex-en">${w.exEn}</div>`:''}
+      ${w.exTr?`<div class="wdm-ex-tr">${w.exTr}</div>`:''}
+    </div></div>`:'';
+  const famBlock=famHtml?`<div class="wdm-sec"><div class="wdm-lbl">${s('wdFam')}</div><div class="wdm-fam">${famHtml}</div></div>`:'';
+  const noteBlock=w.note?`<div class="wdm-sec"><div class="wdm-lbl">${s('wdNote')}</div><div class="wdm-note">${w.note}</div></div>`:'';
+  document.getElementById('wdContent').innerHTML=`
+    <div class="wdm-hdr">
+      <div class="wdm-badge">${tfull[w.type]||w.type}</div>
+      <div class="wdm-word">${w.word}</div>
+      ${w.pron?`<div class="wdm-pron">${w.pron}</div>`:''}
+    </div>
+    <div class="wdm-body">
+      <div class="wdm-tts">
+        <button class="tts-btn" id="ttsModalBtn" onclick="ttsModalWord('${w.word.replace(/'/g,"\\'")}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          ${lang==='tr'?'Kelimeyi Dinle':'Listen to Word'}
+        </button>
+        ${w.exEn?`<button class="tts-btn" id="ttsModalExBtn" onclick="ttsSpeakWord('${w.exEn.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${ttsLangCode(targetLang)}',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+          ${lang==='tr'?'Cümleyi Dinle':'Listen to Sentence'}
+        </button>`:''}
+      </div>
+      <div class="wdm-meaning">${w.meaning}</div>
+      <div class="wdm-stats">
+        <div class="wdm-stat"><div class="wdm-stat-n">${w.reps||0}/4</div><div class="wdm-stat-l">${s('wdReps')}</div></div>
+        <div class="wdm-stat"><div class="wdm-stat-n">${pct}%</div><div class="wdm-stat-l">${s('wdMast')}</div></div>
+        <div class="wdm-stat"><div class="wdm-stat-n" style="font-size:12px;padding-top:4px">${w.date||'—'}</div><div class="wdm-stat-l">${s('wdAdded')}</div></div>
+      </div>
+      ${exHtml}${famBlock}${noteBlock}
+      <div class="wdm-acts">
+        <button class="wdm-edit" onclick="closeModals();openEdit(${idx})">${s('wdEdit')}</button>
+        <button class="wdm-close" onclick="closeModals()">${s('wdClose')}</button>
+      </div>
+    </div>`;
+  document.getElementById('wdModal').classList.add('open');
+}
+
+// ════════════════════════════════════════
+// DRAG & DROP
+// ════════════════════════════════════════
+function dragStart(e,idx){dragSrcIdx=idx;e.dataTransfer.effectAllowed='move';e.currentTarget.classList.add('dragging');}
+function dragOver(e){e.preventDefault();e.dataTransfer.dropEffect='move';document.querySelectorAll('tr.drag-over').forEach(r=>r.classList.remove('drag-over'));e.currentTarget.classList.add('drag-over');}
+function dropOn(e,ti){
+  e.preventDefault();
+  if(dragSrcIdx===null||dragSrcIdx===ti)return;
+  if(curFilter!=='all'){toast(s('toastDragFilter'));return;}
+  const item=words.splice(dragSrcIdx,1)[0];
+  words.splice(ti,0,item);
+  dragSrcIdx=null;
+  saveAll();renderTable();renderToday();buildRepeat();renderQuiz();
+  toast(s('toastOrder'));
+}
+function dragEnd(){
+  dragSrcIdx=null;
+  document.querySelectorAll('tr.dragging,tr.drag-over').forEach(r=>r.classList.remove('dragging','drag-over'));
+}
+
+// ════════════════════════════════════════
+// NOTE
+// ════════════════════════════════════════
+function openNote(idx){
+  pendingNote=idx;
+  document.getElementById('noteTxt').textContent=s('noteTxt',words[idx].word);
+  document.getElementById('noteInput').value=words[idx].note||'';
+  document.getElementById('noteModal').classList.add('open');
+}
+function saveNote(){
+  if(pendingNote===null)return;
+  words[pendingNote].note=document.getElementById('noteInput').value.trim();
+  saveAll();closeModals();renderTable();
+  toast(s('toastNote'));
+}
+
+// ════════════════════════════════════════
+// DELETE
+// ════════════════════════════════════════
+function askDel(idx){
+  pendingDel=idx;
+  document.getElementById('delTxt').textContent=s('delTxt',words[idx].word);
+  document.getElementById('delModal').classList.add('open');
+}
+function confirmDelete(){
+  if(pendingDel===null)return;
+  const name=words[pendingDel].word;
+  words.splice(pendingDel,1);
+  saveAll();closeModals();
+  renderToday();buildRepeat();updateStats();renderTable();shuffleOrder();renderQuiz();
+  toast(s('toastDeleted',name));
+}
+
+function closeModals(){
+  pendingDel=null;pendingNote=null;
+  document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open'));
+}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)closeModals();}));
+
+// ════════════════════════════════════════
+// EDIT
+// ════════════════════════════════════════
+function openEdit(idx){
+  editingIdx=idx;
+  const w=words[idx];
+  document.getElementById('iW').value=w.word;
+  document.getElementById('iP').value=w.pron;
+  document.getElementById('iM').value=w.meaning;
+  document.getElementById('iT').value=w.type;
+  document.getElementById('iEn').value=w.exEn||'';
+  document.getElementById('iTr').value=w.exTr||'';
+  document.getElementById('dupWarn').style.display='none';
+  document.getElementById('editBar').style.display='block';
+  document.getElementById('editBar').textContent=s('editBar',w.word);
+  document.getElementById('formTitle').textContent=s('editFormTitle');
+  document.getElementById('submitBtn').textContent=s('updateBtn');
+  document.getElementById('cancelBtn').style.display='inline-block';
+  document.getElementById('formCard').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function cancelEdit(){
+  editingIdx=null;
+  ['iW','iP','iM','iEn','iTr'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('dupWarn').style.display='none';
+  document.getElementById('editBar').style.display='none';
+  document.getElementById('formTitle').textContent=s('formTitle');
+  document.getElementById('submitBtn').textContent=s('submitBtn');
+  document.getElementById('cancelBtn').style.display='none';
+}
+
+function checkDup(){
+  const v=document.getElementById('iW').value.trim().toLowerCase();
+  const dup=words.some((w,i)=>w.word.toLowerCase()===v&&i!==editingIdx);
+  document.getElementById('dupWarn').style.display=dup?'block':'none';
+}
+
+function submitWord(){
+  const w=document.getElementById('iW').value.trim();
+  const p=document.getElementById('iP').value.trim();
+  const m=document.getElementById('iM').value.trim();
+  const tp=document.getElementById('iT').value;
+  const en=document.getElementById('iEn').value.trim();
+  const tr_=document.getElementById('iTr').value.trim();
+  if(!w||!m){toast(s('toastRequired'));return;}
+  if(editingIdx!==null){
+    if(words.some((x,i)=>x.word.toLowerCase()===w.toLowerCase()&&i!==editingIdx)){toast(s('toastDup'));return;}
+    words[editingIdx]={...words[editingIdx],word:w,pron:p,meaning:m,type:tp,exEn:en,exTr:tr_};
+    saveAll();rebuildAll();
+    toast(s('toastUpdated',w));
+    cancelEdit();
+  } else {
+    if(words.some(x=>x.word.toLowerCase()===w.toLowerCase())){toast(s('toastDup'));return;}
+    const id=w.replace(/[^a-zA-Z0-9\u00C0-\u024F\u4E00-\u9FFF\u0600-\u06FF\u3040-\u30FF]/g,'_')+'_'+Date.now();
+    words.unshift({id,word:w,pron:p,type:tp,meaning:m,exEn:en,exTr:tr_,
+      date:todayDateTR,reps:0,rd:[false,false,false,false],note:''});
+    // Mark today in streak when adding a word
+    if(!streak.includes(todayStr)){
+      streak.push(todayStr);
+      const {db,ref,set}=window._FB;
+      const uid = window._currentUser ? window._currentUser.uid : 'guest';
+      set(ref(db,`users/${uid}/streak`),streak);
+    }
+    saveAll();rebuildAll();
+    ['iW','iP','iM','iEn','iTr'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('dupWarn').style.display='none';
+    toast(s('toastAdded',w));
+  }
+}
+
+
+// ════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════
+let toastT;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2600);
+}
+
+// ════════════════════════════════════════
+// TTS — Web Speech API
+// ════════════════════════════════════════
+let _ttsActive = null; // track active button
+
+function ttsLangCode(targetLang){
+  const map={en:'en-US',zh:'zh-CN',ar:'ar-SA',es:'es-ES',ja:'ja-JP',fr:'fr-FR',de:'de-DE'};
+  return map[targetLang]||'en-US';
+}
+
+function ttsSpeakWord(text, lang, btnEl){
+  if(!window.speechSynthesis){toast('🔇 TTS desteklenmiyor');return;}
+  // If already speaking this button, stop
+  if(_ttsActive===btnEl && speechSynthesis.speaking){
+    speechSynthesis.cancel();
+    btnEl.classList.remove('speaking');
+    _ttsActive=null;
+    return;
+  }
+  // Cancel any ongoing speech
+  speechSynthesis.cancel();
+  if(_ttsActive){_ttsActive.classList.remove('speaking');_ttsActive=null;}
+
+  const utt=new SpeechSynthesisUtterance(text);
+  utt.lang=lang;
+  utt.rate=0.88;
+  utt.pitch=1;
+
+  // Try to find best matching voice
+  const voices=speechSynthesis.getVoices();
+  const best=voices.find(v=>v.lang===lang)||voices.find(v=>v.lang.startsWith(lang.split('-')[0]));
+  if(best) utt.voice=best;
+
+  btnEl.classList.add('speaking');
+  _ttsActive=btnEl;
+
+  utt.onend=()=>{btnEl.classList.remove('speaking');if(_ttsActive===btnEl)_ttsActive=null;};
+  utt.onerror=()=>{btnEl.classList.remove('speaking');if(_ttsActive===btnEl)_ttsActive=null;};
+
+  speechSynthesis.speak(utt);
+}
+
+function ttsWord(idx){
+  const w=words[idx]; if(!w)return;
+  const btn=document.getElementById('ttsBtnWord_'+idx)||document.getElementById('ttsToday');
+  if(!btn)return;
+  ttsSpeakWord(w.word, ttsLangCode(targetLang), btn);
+}
+
+function ttsTodayWord(){
+  if(!words.length)return;
+  const btn=document.getElementById('ttsToday');
+  if(!btn)return;
+  ttsSpeakWord(words[0].word, ttsLangCode(targetLang), btn);
+}
+
+function ttsModalWord(word){
+  const btn=document.getElementById('ttsModalBtn');
+  if(!btn)return;
+  ttsSpeakWord(word, ttsLangCode(targetLang), btn);
+}
+
+function ttsQuizWord(){
+  if(!words.length||!quizOrder.length)return;
+  const btn=document.getElementById('ttsQuizBtn');
+  if(!btn)return;
+  const w=words[quizOrder[quizPos]];
+  if(!w)return;
+  const text=quizMode==='en-tr'?w.word:w.meaning;
+  const lang=quizMode==='en-tr'?ttsLangCode(targetLang):'tr-TR';
+  ttsSpeakWord(text, lang, btn);
+}
+
+window.ttsWord=ttsWord; window.ttsTodayWord=ttsTodayWord; window.ttsModalWord=ttsModalWord; window.ttsQuizWord=ttsQuizWord; window.ttsSpeakWord=ttsSpeakWord;
+
+// Pre-load voices (Chrome requires this)
+if(window.speechSynthesis){
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
+}
+
+
+// Expose all functions used in inline onclick to global window scope
+window.setLang=setLang; window.calNav=calNav; window.togRep=togRep;
+window.setMode=setMode; window.toggleAns=toggleAns; window.nextQ=nextQ; window.prevQ=prevQ;
+window.filt=filt; window.openDetail=openDetail; window.dragStart=dragStart;
+window.dragOver=dragOver; window.dropOn=dropOn; window.dragEnd=dragEnd;
+window.openNote=openNote; window.saveNote=saveNote; window.askDel=askDel;
+window.confirmDelete=confirmDelete; window.closeModals=closeModals;
+window.cancelEdit=cancelEdit; window.checkDup=checkDup; window.submitWord=submitWord;
+window.openEdit=openEdit; window.chRep=chRep; window.setTarget=setTarget;
+
+// Restore target tab
+document.querySelectorAll('.tgt-btn').forEach(b=>{
+  b.classList.toggle('on', b.dataset.tgt === targetLang);
+});
+// Build calendar before Firebase (shows current month)
+buildCal();
+// Apply static lang strings before Firebase loads
+applyLang();
+// Set quiz mode labels based on target language
+updateQuizModeLabels();
+</script>
+</body>
+</html>
