@@ -674,8 +674,8 @@ button,select,.tdw,.wcard-word{touch-action:manipulation;}
   <div class="stitle" id="todayTitle">Günün Kelimesi</div>
   <div class="today" id="todayCard">
     <div id="todayContent">
-      <span class="wbadge" id="tBadge">—</span>
-      <div class="tw" id="tWord">—</div>
+      <span class="wbadge" id="tBadge"></span>
+      <div class="tw" id="tWord"></div>
       <div class="tp" id="tPron"></div>
       <div class="tm" id="tMeaning"></div>
         <div class="exbox" id="tExbox">
@@ -703,7 +703,7 @@ button,select,.tdw,.wcard-word{touch-action:manipulation;}
         <button class="qm-btn on" id="modeEN" onclick="setMode('en-tr',this)">İngilizce → Türkçe</button>
         <button class="qm-btn" id="modeTR" onclick="setMode('tr-en',this)">Türkçe → İngilizce</button>
       </div>
-      <div class="quiz-box"><div><div class="qw" id="qWord">—</div><div class="qp" id="qPron"></div></div></div>
+      <div class="quiz-box"><div><div class="qw" id="qWord"></div><div class="qp" id="qPron"></div></div></div>
       <div style="text-align:center;margin-bottom:8px;">
         <button class="tts-btn" id="ttsQuizBtn" onclick="ttsQuizWord()" style="margin-top:0;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
@@ -730,7 +730,7 @@ button,select,.tdw,.wcard-word{touch-action:manipulation;}
           <div class="prog-bar"><div class="prog-fill fa" id="b0"></div></div>
         </div>
         <div class="prog-wrap">
-          <div class="prog-lbl"><span id="pLbl1">Çalışılıyor (1–3)</span><span id="p1">0</span></div>
+          <div class="prog-lbl"><span id="pLbl1">Çalışılıyor (1-3)</span><span id="p1">0</span></div>
           <div class="prog-bar"><div class="prog-fill fb" id="b1"></div></div>
         </div>
         <div class="prog-wrap">
@@ -888,12 +888,12 @@ const TX = {
     loading:'Veriler yükleniyor...',
     statWord:'Kelime', statStreak:'Gün Serisi', statMastered:'Öğrenildi', statRepeat:'Bugün Tekrar',
     todayTitle:'Günün Kelimesi', famLbl:'Kelime Ailesi',
-    repH:'Tekrar Programı', repSub:'Spaced repetition — her aşamayı tıkla, geri al',
-    quizH:'Hızlı Quiz', quizSub:'Rastgele kelime — cevabı tahmin et',
+    repH:'Tekrar Programı', repSub:'Her aşamayı tamamlayınca işaretle, yanlışsa tekrar tıkla',
+    quizH:'Hızlı Quiz', quizSub:'Önce tahmin et, sonra cevabı aç',
     modeEN:'İngilizce → Türkçe', modeTR:'Türkçe → İngilizce',
     qBtnPrev:'Geri', qBtnShow:'Cevap', qBtnShowHide:'Gizle', qBtnNext:'İleri',
     progH:'İlerleme Durumum',
-    pLbl0:'Yeni (0 tekrar)', pLbl1:'Çalışılıyor (1–3)', pLbl2:'Öğrenildi (4+)',
+    pLbl0:'Yeni (0 tekrar)', pLbl1:'Çalışılıyor (1-3)', pLbl2:'Öğrenildi (4+)',
     streakH:'Çalışma Serisi', streakLbl:'günlük seri ',
     wdays:['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'],
     months:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
@@ -945,7 +945,7 @@ const TX = {
     modeEN:'English → Turkish', modeTR:'Turkish → English',
     qBtnPrev:'Back', qBtnShow:'Answer', qBtnShowHide:'Hide', qBtnNext:'Next',
     progH:'My Progress',
-    pLbl0:'New (0 reviews)', pLbl1:'Learning (1–3)', pLbl2:'Mastered (4+)',
+    pLbl0:'New (0 reviews)', pLbl1:'Learning (1-3)', pLbl2:'Mastered (4+)',
     streakH:'Study Streak', streakLbl:'day streak ',
     wdays:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
     months:['January','February','March','April','May','June','July','August','September','October','November','December'],
@@ -959,7 +959,7 @@ const TX = {
     iWPh:'e.g. abundant', iPPh:'/əˈbʌndənt/', iMPh:'e.g. bol, çok', iEnPh:'She has an abundant knowledge of history.', iTrPh:'Tarih hakkında geniş bir bilgiye sahip.',
     oAdj:'Adjective', oNoun:'Noun', oVerb:'Verb',
     submitBtn:'Add word', updateBtn:'Update', cancelBtn:'Cancel',
-    dupWarn:'This word is already in your list!',
+    dupWarn:'This word is already in your list.',
     editBar:(w)=>`Editing "${w}"`,
     noWords:'No words yet ', repEmpty:'No words yet',
     typeFull:{adjective:'Adjective',noun:'Noun',verb:'Verb'},
@@ -982,9 +982,9 @@ const TX = {
     toastRepPlus:'Review increased', toastRepMinus:'Review decreased',
     toastNote:'Note saved', toastOrder:'Order updated',
     toastDragFilter:'To reorder, set filter to All, sort to Default and clear search',
-    toastShuffle:'All words done, reshuffled!',
-    toastRequired:'Word and meaning are required!',
-    toastDup:'This word is already in your list!',
+    toastShuffle:'All words done, reshuffled',
+    toastRequired:'Word and meaning are required.',
+    toastDup:'This word is already in your list.',
     toastDone:'✓ Done', toastUndo:'Undone',
     pWords:'words',
   }
@@ -1122,7 +1122,7 @@ function setTheme(name, dotEl){
 })();
 
 // ════════════════════════════════════════
-// LANGUAGE — single source of truth
+// LANGUAGE: single source of truth
 // ════════════════════════════════════════
 function setLang(l){
   lang=l;
@@ -1147,7 +1147,7 @@ function setTarget(tgt, btn){
 }
 
 function applyLang(){
-  // Static UI strings — all set by ID, no data-* hackery
+  // Static UI strings, all set by ID
   const ids={
     lTotal:'statWord',lStreak:'statStreak',lMastered:'statMastered',lRepeat:'statRepeat',
     todayTitle:'todayTitle',tFamLbl:'famLbl',
@@ -1275,7 +1275,7 @@ function updateStats(){
 }
 
 // ════════════════════════════════════════
-// CALENDAR — Pazartesi başlar, bugünü gösterir, streak günlerini renklendirir
+// CALENDAR: hafta Pazartesi başlar, bugün ve çalışılan günler renklenir
 // ════════════════════════════════════════
 function buildCal(){
   const wdEl=document.getElementById('calWD');
@@ -1284,7 +1284,7 @@ function buildCal(){
 
   lblEl.textContent=s('months')[calMonth]+' '+calYear;
 
-  // Weekday headers Mon–Sun
+  // Weekday headers Mon-Sun
   wdEl.innerHTML=s('wdays').map(d=>`<div class="cal-wd">${d}</div>`).join('');
 
   // First day offset (Mon=0)
@@ -1392,7 +1392,7 @@ function togRep(wi,si){
 }
 
 // ════════════════════════════════════════
-// QUIZ — toggle answer show/hide
+// QUIZ: toggle answer show/hide
 // ════════════════════════════════════════
 function shuffleOrder(){
   quizOrder=words.map((_,i)=>i);
@@ -1477,7 +1477,7 @@ function renderTable(){
   // Desktop table rows
   tbody.innerHTML=list.map(w=>{
     const idx=words.indexOf(w),reps=w.reps||0,pct=Math.min(reps*25,100);
-    const noteHtml=w.note?`<span class="note-txt" title="${esc(w.note)}">${esc(w.note)}</span>`:`<span style="color:var(--muted);font-size:12px">—</span>`;
+    const noteHtml=w.note?`<span class="note-txt" title="${esc(w.note)}">${esc(w.note)}</span>`:`<span style="color:var(--muted);font-size:12px">-</span>`;
     return `<tr draggable="true" data-idx="${idx}" ondragstart="dragStart(event,${idx})" ondragover="dragOver(event)" ondrop="dropOn(event,${idx})" ondragend="dragEnd(event)">
       <td><span class="drag-handle">⋮⋮</span></td>
       <td><div class="tdw" onclick="openDetail(${idx})">${esc(w.word)}</div><div class="tdp">${esc(w.pron)}</div></td>
@@ -1562,7 +1562,7 @@ function openDetail(idx){
       <div class="wdm-stats">
         <div class="wdm-stat"><div class="wdm-stat-n">${w.reps||0}/4</div><div class="wdm-stat-l">${s('wdReps')}</div></div>
         <div class="wdm-stat"><div class="wdm-stat-n">${pct}%</div><div class="wdm-stat-l">${s('wdMast')}</div></div>
-        <div class="wdm-stat"><div class="wdm-stat-n" style="font-size:12px;padding-top:4px">${esc(w.date||'—')}</div><div class="wdm-stat-l">${s('wdAdded')}</div></div>
+        <div class="wdm-stat"><div class="wdm-stat-n" style="font-size:12px;padding-top:4px">${esc(w.date||'-')}</div><div class="wdm-stat-l">${s('wdAdded')}</div></div>
       </div>
       ${exHtml}${noteBlock}
       <div class="wdm-acts">
@@ -1713,7 +1713,7 @@ function toast(msg){
 }
 
 // ════════════════════════════════════════
-// TTS — Web Speech API
+// TTS: Web Speech API
 // ════════════════════════════════════════
 let _ttsActive = null; // track active button
 
